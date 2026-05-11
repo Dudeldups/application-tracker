@@ -55,7 +55,9 @@ const contactFormSchema = z.object({
 
 const communicationFormSchema = z.object({
   type: z.string().trim().min(1, "Type is required."),
-  direction: z.string().trim().min(1, "Direction is required."),
+  direction: z.enum(["incoming", "outgoing"], {
+    error: "Direction is required.",
+  }),
   summary: z.string().trim().min(1, "Summary is required."),
   body: z.string().optional(),
   date: z.string().optional(),
@@ -96,7 +98,7 @@ export function ApplicationDetailPage() {
     resolver: zodResolver(communicationFormSchema),
     defaultValues: {
       type: "",
-      direction: "",
+      direction: "incoming",
       summary: "",
       body: "",
       date: "",
@@ -469,11 +471,21 @@ export function ApplicationDetailPage() {
                   {...communicationForm.register("type")}
                   error={communicationForm.formState.errors.type?.message}
                 />
-                <TextInput
-                  label="Direction"
-                  placeholder="incoming / outgoing"
-                  {...communicationForm.register("direction")}
-                  error={communicationForm.formState.errors.direction?.message}
+                <Controller
+                  control={communicationForm.control}
+                  name="direction"
+                  render={({ field }) => (
+                    <Select
+                      label="Direction"
+                      data={[
+                        { value: "incoming", label: "Incoming" },
+                        { value: "outgoing", label: "Outgoing" },
+                      ]}
+                      value={field.value}
+                      onChange={value => field.onChange(value ?? "incoming")}
+                      error={communicationForm.formState.errors.direction?.message}
+                    />
+                  )}
                 />
                 <TextInput
                   label="Date"
