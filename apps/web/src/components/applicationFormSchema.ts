@@ -23,12 +23,7 @@ const optionalUrlString = z
     message: "Please enter a URL starting with http:// or https://.",
   });
 
-const optionalRating = z
-  .number()
-  .optional()
-  .refine(value => value == null || (value >= 1 && value <= 5), {
-    message: "Please enter a value between 1 and 5.",
-  });
+const requiredRating = z.number().min(1).max(5, "Please enter a value between 1 and 5.");
 
 export const applicationFormSchema = z.object({
   companyName: z.string().trim().min(1, "Company is required."),
@@ -49,9 +44,9 @@ export const applicationFormSchema = z.object({
   focusNotes: z.string().optional(),
   customizationNotes: z.string().optional(),
   notes: z.string().optional(),
-  interestRating: optionalRating,
-  skillFitRating: optionalRating,
-  priorityRating: optionalRating,
+  interestRating: requiredRating,
+  skillFitRating: requiredRating,
+  priorityRating: requiredRating,
 });
 
 export type ApplicationFormValues = z.infer<typeof applicationFormSchema>;
@@ -87,9 +82,9 @@ export function buildApplicationFormValues(
     focusNotes: toOptionalString(application?.focusNotes),
     customizationNotes: toOptionalString(application?.customizationNotes),
     notes: toOptionalString(application?.notes),
-    interestRating: application?.interestRating ?? undefined,
-    skillFitRating: application?.skillFitRating ?? undefined,
-    priorityRating: application?.priorityRating ?? undefined,
+    interestRating: application?.interestRating ?? 3,
+    skillFitRating: application?.skillFitRating ?? 3,
+    priorityRating: application?.priorityRating ?? 3,
   };
 }
 
@@ -113,8 +108,8 @@ export function toApplicationPayload(values: ApplicationFormValues) {
     focusNotes: emptyStringToUndefined(values.focusNotes),
     customizationNotes: emptyStringToUndefined(values.customizationNotes),
     notes: emptyStringToUndefined(values.notes),
-    interestRating: values.interestRating ?? undefined,
-    skillFitRating: values.skillFitRating ?? undefined,
-    priorityRating: values.priorityRating ?? undefined,
+    interestRating: values.interestRating,
+    skillFitRating: values.skillFitRating,
+    priorityRating: values.priorityRating,
   };
 }

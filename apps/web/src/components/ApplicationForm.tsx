@@ -202,27 +202,19 @@ export function ApplicationForm({
                   <Stack gap="xs">
                     <Group justify="space-between" align="center">
                       <Text fw={500}>Interest</Text>
-                      <Group gap="xs">
-                        <Text size="sm" c="dimmed">
-                          {field.value ?? "Not set"}
-                        </Text>
-                        <Button
-                          type="button"
-                          size="compact-xs"
-                          variant="subtle"
-                          onClick={() => field.onChange(undefined)}>
-                          Clear
-                        </Button>
-                      </Group>
+                      <Text size="sm" c="dimmed">
+                        {field.value}
+                      </Text>
                     </Group>
                     <Slider
                       min={1}
                       max={5}
                       step={1}
                       marks={ratingMarks}
-                      value={field.value ?? 3}
+                      value={field.value}
                       onChange={field.onChange}
                       label={value => `${value}`}
+                      mb="lg"
                     />
                     {form.formState.errors.interestRating?.message ? (
                       <Text size="sm" c="red">
@@ -241,27 +233,19 @@ export function ApplicationForm({
                   <Stack gap="xs">
                     <Group justify="space-between" align="center">
                       <Text fw={500}>Skill fit</Text>
-                      <Group gap="xs">
-                        <Text size="sm" c="dimmed">
-                          {field.value ?? "Not set"}
-                        </Text>
-                        <Button
-                          type="button"
-                          size="compact-xs"
-                          variant="subtle"
-                          onClick={() => field.onChange(undefined)}>
-                          Clear
-                        </Button>
-                      </Group>
+                      <Text size="sm" c="dimmed">
+                        {field.value}
+                      </Text>
                     </Group>
                     <Slider
                       min={1}
                       max={5}
                       step={1}
                       marks={ratingMarks}
-                      value={field.value ?? 3}
+                      value={field.value}
                       onChange={field.onChange}
                       label={value => `${value}`}
+                      mb="lg"
                     />
                     {form.formState.errors.skillFitRating?.message ? (
                       <Text size="sm" c="red">
@@ -280,27 +264,19 @@ export function ApplicationForm({
                   <Stack gap="xs">
                     <Group justify="space-between" align="center">
                       <Text fw={500}>Priority</Text>
-                      <Group gap="xs">
-                        <Text size="sm" c="dimmed">
-                          {field.value ?? "Not set"}
-                        </Text>
-                        <Button
-                          type="button"
-                          size="compact-xs"
-                          variant="subtle"
-                          onClick={() => field.onChange(undefined)}>
-                          Clear
-                        </Button>
-                      </Group>
+                      <Text size="sm" c="dimmed">
+                        {field.value}
+                      </Text>
                     </Group>
                     <Slider
                       min={1}
                       max={5}
                       step={1}
                       marks={ratingMarks}
-                      value={field.value ?? 3}
+                      value={field.value}
                       onChange={field.onChange}
                       label={value => `${value}`}
+                      mb="lg"
                     />
                     {form.formState.errors.priorityRating?.message ? (
                       <Text size="sm" c="red">
