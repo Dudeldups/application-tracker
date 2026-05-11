@@ -5,9 +5,10 @@ import {
   Checkbox,
   Grid,
   Group,
-  NumberInput,
   Select,
+  Slider,
   Stack,
+  Text,
   Textarea,
   TextInput,
 } from "@mantine/core";
@@ -27,6 +28,14 @@ type ApplicationFormProps = {
   onSubmit: (values: ApplicationFormValues) => Promise<void>;
   isSubmitting?: boolean;
 };
+
+const ratingMarks = [
+  { value: 1, label: "1" },
+  { value: 2, label: "2" },
+  { value: 3, label: "3" },
+  { value: 4, label: "4" },
+  { value: 5, label: "5" },
+];
 
 export function ApplicationForm({
   initialValues,
@@ -190,17 +199,37 @@ export function ApplicationForm({
                 control={form.control}
                 name="interestRating"
                 render={({ field }) => (
-                  <NumberInput
-                    label="Interest (1-5)"
-                    min={1}
-                    max={5}
-                    allowDecimal={false}
-                    value={field.value ?? undefined}
-                    onChange={value =>
-                      field.onChange(typeof value === "number" ? value : undefined)
-                    }
-                    error={form.formState.errors.interestRating?.message}
-                  />
+                  <Stack gap="xs">
+                    <Group justify="space-between" align="center">
+                      <Text fw={500}>Interest</Text>
+                      <Group gap="xs">
+                        <Text size="sm" c="dimmed">
+                          {field.value ?? "Not set"}
+                        </Text>
+                        <Button
+                          type="button"
+                          size="compact-xs"
+                          variant="subtle"
+                          onClick={() => field.onChange(undefined)}>
+                          Clear
+                        </Button>
+                      </Group>
+                    </Group>
+                    <Slider
+                      min={1}
+                      max={5}
+                      step={1}
+                      marks={ratingMarks}
+                      value={field.value ?? 3}
+                      onChange={field.onChange}
+                      label={value => `${value}`}
+                    />
+                    {form.formState.errors.interestRating?.message ? (
+                      <Text size="sm" c="red">
+                        {form.formState.errors.interestRating.message}
+                      </Text>
+                    ) : null}
+                  </Stack>
                 )}
               />
             </Grid.Col>
@@ -209,17 +238,37 @@ export function ApplicationForm({
                 control={form.control}
                 name="skillFitRating"
                 render={({ field }) => (
-                  <NumberInput
-                    label="Skill fit (1-5)"
-                    min={1}
-                    max={5}
-                    allowDecimal={false}
-                    value={field.value ?? undefined}
-                    onChange={value =>
-                      field.onChange(typeof value === "number" ? value : undefined)
-                    }
-                    error={form.formState.errors.skillFitRating?.message}
-                  />
+                  <Stack gap="xs">
+                    <Group justify="space-between" align="center">
+                      <Text fw={500}>Skill fit</Text>
+                      <Group gap="xs">
+                        <Text size="sm" c="dimmed">
+                          {field.value ?? "Not set"}
+                        </Text>
+                        <Button
+                          type="button"
+                          size="compact-xs"
+                          variant="subtle"
+                          onClick={() => field.onChange(undefined)}>
+                          Clear
+                        </Button>
+                      </Group>
+                    </Group>
+                    <Slider
+                      min={1}
+                      max={5}
+                      step={1}
+                      marks={ratingMarks}
+                      value={field.value ?? 3}
+                      onChange={field.onChange}
+                      label={value => `${value}`}
+                    />
+                    {form.formState.errors.skillFitRating?.message ? (
+                      <Text size="sm" c="red">
+                        {form.formState.errors.skillFitRating.message}
+                      </Text>
+                    ) : null}
+                  </Stack>
                 )}
               />
             </Grid.Col>
@@ -228,17 +277,37 @@ export function ApplicationForm({
                 control={form.control}
                 name="priorityRating"
                 render={({ field }) => (
-                  <NumberInput
-                    label="Priority (1-5)"
-                    min={1}
-                    max={5}
-                    allowDecimal={false}
-                    value={field.value ?? undefined}
-                    onChange={value =>
-                      field.onChange(typeof value === "number" ? value : undefined)
-                    }
-                    error={form.formState.errors.priorityRating?.message}
-                  />
+                  <Stack gap="xs">
+                    <Group justify="space-between" align="center">
+                      <Text fw={500}>Priority</Text>
+                      <Group gap="xs">
+                        <Text size="sm" c="dimmed">
+                          {field.value ?? "Not set"}
+                        </Text>
+                        <Button
+                          type="button"
+                          size="compact-xs"
+                          variant="subtle"
+                          onClick={() => field.onChange(undefined)}>
+                          Clear
+                        </Button>
+                      </Group>
+                    </Group>
+                    <Slider
+                      min={1}
+                      max={5}
+                      step={1}
+                      marks={ratingMarks}
+                      value={field.value ?? 3}
+                      onChange={field.onChange}
+                      label={value => `${value}`}
+                    />
+                    {form.formState.errors.priorityRating?.message ? (
+                      <Text size="sm" c="red">
+                        {form.formState.errors.priorityRating.message}
+                      </Text>
+                    ) : null}
+                  </Stack>
                 )}
               />
             </Grid.Col>
