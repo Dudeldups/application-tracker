@@ -5,6 +5,7 @@ import {
   Card,
   Group,
   Loader,
+  Select,
   Stack,
   Text,
   Title,
@@ -18,10 +19,66 @@ import { formatDate } from "../lib/format";
 import { StatusBadge } from "../components/StatusBadge";
 import type { ApplicationWithRelations } from "../types/application";
 
+const sortOptions = [
+  { value: "newest", label: "Newest first" },
+  { value: "oldest", label: "Oldest first" },
+  { value: "followUpSoonest", label: "Follow-up soonest" },
+  { value: "companyAsc", label: "Company A-Z" },
+  { value: "companyDesc", label: "Company Z-A" },
+] as const;
+
+type SortOption = (typeof sortOptions)[number]["value"];
+
+function getTimestamp(value?: string | null) {
+  return value ? new Date(value).getTime() : null;
+}
+
+function sortApplications(
+  applications: ApplicationWithRelations[],
+  sortBy: SortOption,
+) {
+  const sorted = [...applications];
+
+  sorted.sort((left, right) => {
+    switch (sortBy) {
+      case "oldest":
+        return new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime();
+      case "followUpSoonest": {
+        const leftFollowUp = getTimestamp(left.followUpAt);
+        const rightFollowUp = getTimestamp(right.followUpAt);
+
+        if (leftFollowUp == null && rightFollowUp == null) {
+          return new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime();
+        }
+
+        if (leftFollowUp == null) {
+          return 1;
+        }
+
+        if (rightFollowUp == null) {
+          return -1;
+        }
+
+        return leftFollowUp - rightFollowUp;
+      }
+      case "companyAsc":
+        return left.companyName.localeCompare(right.companyName);
+      case "companyDesc":
+        return right.companyName.localeCompare(left.companyName);
+      case "newest":
+      default:
+        return new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime();
+    }
+  });
+
+  return sorted;
+}
+
 export function ApplicationsPage() {
   const [applications, setApplications] = useState<ApplicationWithRelations[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<SortOption>("newest");
 
   useEffect(() => {
     getApplications()
@@ -35,6 +92,8 @@ export function ApplicationsPage() {
       })
       .finally(() => setIsLoading(false));
   }, []);
+
+  const sortedApplications = sortApplications(applications, sortBy);
 
   return (
     <Stack gap="md">
@@ -52,6 +111,16 @@ export function ApplicationsPage() {
         </Button>
       </Group>
 
+      <Group justify="flex-end">
+        <Select
+          label="Sort by"
+          data={sortOptions}
+          value={sortBy}
+          onChange={value => setSortBy((value as SortOption | null) ?? "newest")}
+          w={220}
+        />
+      </Group>
+
       {isLoading ? (
         <Group justify="center" p="xl">
           <Loader />
@@ -66,7 +135,7 @@ export function ApplicationsPage() {
         </Card>
       ) : (
         <Stack>
-          {applications.map(application => (
+          {sortedApplications.map(application => (
             <Card
               key={application.id}
               withBorder
@@ -77,7 +146,7 @@ export function ApplicationsPage() {
               <Group justify="space-between" align="start">
                 <div>
                   <Title order={3}>{application.companyName}</Title>
-                  <Text c="dark">{application.jobTitle}</Text>
+                  <Text>{application.jobTitle}</Text>
                   <Group gap="xs" mt="xs">
                     <Badge variant="outline">
                       {remoteTypeMeta[application.remoteType]}
