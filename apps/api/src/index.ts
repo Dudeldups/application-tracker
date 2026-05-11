@@ -3,6 +3,14 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { PrismaClient } from "./generated/prisma/client.js";
 import { PrismaPg } from "@prisma/adapter-pg";
+import {
+  createApplicationSchema,
+  createCommunicationSchema,
+  createContactSchema,
+  updateApplicationSchema,
+  updateStatusSchema,
+} from "./schemas/applicationSchemas.js";
+import { emptyStringToUndefined, omitUndefined } from "./lib/object.js";
 
 dotenv.config();
 
@@ -35,27 +43,59 @@ app.get("/applications", async (_req, res) => {
 });
 
 app.post("/applications", async (req, res) => {
-  const { companyName, jobTitle, jobUrl, source, jobAdText } = req.body;
+  const result = createApplicationSchema.safeParse(req.body);
 
-  if (!companyName || !jobTitle) {
-    res.status(400).json({ error: "companyName and jobTitle are required" });
+  if (!result.success) {
+    res.status(400).json({
+      error: "Invalid request body",
+      issues: result.error.issues,
+    });
     return;
   }
 
+  const data = result.data;
+  const status = data.status ?? "interesting";
+
   const application = await prisma.application.create({
-    data: {
-      companyName,
-      jobTitle,
-      jobUrl,
-      source,
-      jobAdText,
+    data: omitUndefined({
+      companyName: data.companyName,
+      jobTitle: data.jobTitle,
+      location: emptyStringToUndefined(data.location),
+      remoteType: data.remoteType,
+
+      source: emptyStringToUndefined(data.source),
+      jobUrl: emptyStringToUndefined(data.jobUrl),
+
+      status,
+
+      foundAt: data.foundAt ? new Date(data.foundAt) : undefined,
+      appliedAt: data.appliedAt ? new Date(data.appliedAt) : undefined,
+      lastContactAt: data.lastContactAt
+        ? new Date(data.lastContactAt)
+        : undefined,
+      followUpAt: data.followUpAt ? new Date(data.followUpAt) : undefined,
+
+      jobAdText: data.jobAdText,
+
+      cvVersion: emptyStringToUndefined(data.cvVersion),
+      coverLetterVersion: emptyStringToUndefined(data.coverLetterVersion),
+      usedCoverLetter: data.usedCoverLetter ?? false,
+
+      focusNotes: data.focusNotes,
+      customizationNotes: data.customizationNotes,
+      notes: data.notes,
+
+      interestRating: data.interestRating,
+      skillFitRating: data.skillFitRating,
+      priorityRating: data.priorityRating,
+
       statusHistory: {
         create: {
-          status: "interesting",
+          status,
           note: "Initial status",
         },
       },
-    },
+    }),
     include: {
       statusHistory: true,
     },
@@ -87,10 +127,53 @@ app.get("/applications/:id", async (req, res) => {
 });
 
 app.patch("/applications/:id", async (req, res) => {
+  const result = updateApplicationSchema.safeParse(req.body);
+
+  if (!result.success) {
+    res.status(400).json({
+      error: "Invalid request body",
+      issues: result.error.issues,
+    });
+    return;
+  }
+
+  const data = result.data;
+
   try {
     const application = await prisma.application.update({
       where: { id: req.params.id },
-      data: req.body,
+      data: omitUndefined({
+        companyName: data.companyName,
+        jobTitle: data.jobTitle,
+        location: emptyStringToUndefined(data.location),
+        remoteType: data.remoteType,
+
+        source: emptyStringToUndefined(data.source),
+        jobUrl: emptyStringToUndefined(data.jobUrl),
+
+        status: data.status,
+
+        foundAt: data.foundAt ? new Date(data.foundAt) : undefined,
+        appliedAt: data.appliedAt ? new Date(data.appliedAt) : undefined,
+        lastContactAt: data.lastContactAt
+          ? new Date(data.lastContactAt)
+          : undefined,
+        followUpAt: data.followUpAt ? new Date(data.followUpAt) : undefined,
+
+        jobAdText: data.jobAdText,
+
+        cvVersion: emptyStringToUndefined(data.cvVersion),
+        coverLetterVersion: emptyStringToUndefined(data.coverLetterVersion),
+        usedCoverLetter: data.usedCoverLetter,
+
+        focusNotes: data.focusNotes,
+        customizationNotes: data.customizationNotes,
+        notes: data.notes,
+
+        interestRating: data.interestRating,
+        skillFitRating: data.skillFitRating,
+        priorityRating: data.priorityRating,
+      }),
     });
 
     res.json(application);
@@ -112,12 +195,17 @@ app.delete("/applications/:id", async (req, res) => {
 });
 
 app.patch("/applications/:id/status", async (req, res) => {
-  const { status, note } = req.body;
+  const result = updateStatusSchema.safeParse(req.body);
 
-  if (!status) {
-    res.status(400).json({ error: "status is required" });
+  if (!result.success) {
+    res.status(400).json({
+      error: "Invalid request body",
+      issues: result.error.issues,
+    });
     return;
   }
+
+  const { status, note } = result.data;
 
   try {
     const application = await prisma.application.update({
@@ -125,10 +213,10 @@ app.patch("/applications/:id/status", async (req, res) => {
       data: {
         status,
         statusHistory: {
-          create: {
+          create: omitUndefined({
             status,
             note,
-          },
+          }),
         },
       },
       include: {
@@ -145,25 +233,28 @@ app.patch("/applications/:id/status", async (req, res) => {
 });
 
 app.post("/applications/:id/communications", async (req, res) => {
-  const { type, direction, summary, body, date } = req.body;
+  const result = createCommunicationSchema.safeParse(req.body);
 
-  if (!type || !direction || !summary) {
+  if (!result.success) {
     res.status(400).json({
-      error: "type, direction and summary are required",
+      error: "Invalid request body",
+      issues: result.error.issues,
     });
     return;
   }
 
+  const data = result.data;
+
   try {
     const communication = await prisma.communication.create({
-      data: {
+      data: omitUndefined({
         applicationId: req.params.id,
-        type,
-        direction,
-        summary,
-        ...(body ? { body } : {}),
-        ...(date ? { date: new Date(date) } : {}),
-      },
+        type: data.type,
+        direction: data.direction,
+        summary: data.summary,
+        body: data.body,
+        date: data.date ? new Date(data.date) : undefined,
+      }),
     });
 
     res.status(201).json(communication);
@@ -173,17 +264,27 @@ app.post("/applications/:id/communications", async (req, res) => {
 });
 
 app.post("/applications/:id/contacts", async (req, res) => {
-  const { name, role, email, phone } = req.body;
+  const result = createContactSchema.safeParse(req.body);
+
+  if (!result.success) {
+    res.status(400).json({
+      error: "Invalid request body",
+      issues: result.error.issues,
+    });
+    return;
+  }
+
+  const data = result.data;
 
   try {
     const contact = await prisma.contact.create({
-      data: {
+      data: omitUndefined({
         applicationId: req.params.id,
-        name,
-        role,
-        email,
-        phone,
-      },
+        name: emptyStringToUndefined(data.name),
+        role: emptyStringToUndefined(data.role),
+        email: emptyStringToUndefined(data.email),
+        phone: emptyStringToUndefined(data.phone),
+      }),
     });
 
     res.status(201).json(contact);
