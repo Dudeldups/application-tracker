@@ -3,12 +3,94 @@
 @import "@mantine/notifications/styles.css";
 @import "@mantine/dates/styles.css";
 
+:root {
+  --app-bg: #090b10;
+  --app-surface: #13161c;
+  --app-card-bg: #171b22;
+  --app-card-border: #262c36;
+  --app-border: #222832;
+  --app-text: #f3f6fb;
+  --app-text-muted: #a6b0bf;
+}
+
 html,
 body,
 #root {
   min-height: 100%;
 }
 
+html {
+  background: var(--app-bg);
+}
+
 body {
   margin: 0;
+  background: radial-gradient(
+      circle at top,
+      rgba(36, 56, 84, 0.28),
+      transparent 28%
+    ),
+    var(--app-bg);
+  color: var(--app-text);
+}
+
+#root {
+  background: transparent;
+}
+
+.mantine-Card-root {
+  background-color: var(--app-card-bg);
+  border-color: var(--app-card-border);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.22);
+}
+
+.mantine-Paper-root,
+.mantine-Table-root,
+.mantine-Input-input,
+.mantine-InputWrapper-root textarea,
+.mantine-Select-dropdown {
+  background-color: var(--app-card-bg);
+}
+
+.mantine-AppShell-main,
+.mantine-AppShell-header,
+.mantine-AppShell-navbar {
+  color: var(--app-text);
+}
+
+.mantine-Text-root[data-dimmed],
+.mantine-Input-description,
+.mantine-InputWrapper-description {
+  color: var(--app-text-muted);
+}
+
+.mantine-NavLink-root {
+  border-radius: 10px;
+}
+
+.mantine-NavLink-root[data-active="true"] {
+  background-color: rgba(103, 232, 249, 0.14);
+}
+
+.mantine-Input-input,
+.mantine-InputWrapper-input,
+.mantine-Textarea-input,
+.mantine-Select-input {
+  background-color: #1a1f27;
+  border-color: #2b3340;
+  color: var(--app-text);
+}
+
+.mantine-Input-input::placeholder,
+.mantine-Textarea-input::placeholder {
+  color: #7d8897;
+}
+
+.mantine-Table-th,
+.mantine-Table-td {
+  border-color: var(--app-border);
+}
+
+a {
+  color: #7dd3fc;
 }

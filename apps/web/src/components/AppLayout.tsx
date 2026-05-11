@@ -9,7 +9,20 @@ export function AppLayout() {
     <AppShell
       header={{ height: 64 }}
       navbar={{ width: 260, breakpoint: "sm" }}
-      padding="md">
+      padding="md"
+      styles={{
+        main: {
+          backgroundColor: "var(--app-bg)",
+        },
+        header: {
+          backgroundColor: "var(--app-surface)",
+          borderBottom: "1px solid var(--app-border)",
+        },
+        navbar: {
+          backgroundColor: "var(--app-surface)",
+          borderInlineEnd: "1px solid var(--app-border)",
+        },
+      }}>
       <AppShell.Header>
         <Container size="xl" className="flex h-full items-center">
           <Title order={3}>Application Tracker</Title>
