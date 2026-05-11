@@ -177,7 +177,8 @@ app.patch("/applications/:id", async (req, res) => {
     });
 
     res.json(application);
-  } catch {
+  } catch (error) {
+    console.error(error);
     res.status(404).json({ error: "Application not found" });
   }
 });
