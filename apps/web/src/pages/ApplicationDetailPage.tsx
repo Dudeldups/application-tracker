@@ -126,10 +126,10 @@ export function ApplicationDetailPage() {
     setIsSubmittingStatus(true);
 
     try {
-      const updated = await updateApplicationStatus(id, values);
-      setApplication(updated);
+      await updateApplicationStatus(id, values);
+      await loadApplication();
       statusForm.reset({
-        status: updated.status,
+        status: values.status,
         note: "",
       });
       notifications.show({
