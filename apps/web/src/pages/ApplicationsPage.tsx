@@ -23,6 +23,9 @@ const sortOptions = [
   { value: "newest", label: "Newest first" },
   { value: "oldest", label: "Oldest first" },
   { value: "followUpSoonest", label: "Follow-up soonest" },
+  { value: "interestHigh", label: "Interest highest" },
+  { value: "skillFitHigh", label: "Skill fit highest" },
+  { value: "priorityHigh", label: "Priority highest" },
   { value: "companyAsc", label: "Company A-Z" },
   { value: "companyDesc", label: "Company Z-A" },
 ] as const;
@@ -31,6 +34,31 @@ type SortOption = (typeof sortOptions)[number]["value"];
 
 function getTimestamp(value?: string | null) {
   return value ? new Date(value).getTime() : null;
+}
+
+function compareRating(
+  left?: number | null,
+  right?: number | null,
+  leftCreatedAt?: string,
+  rightCreatedAt?: string,
+) {
+  if (left == null && right == null) {
+    return new Date(rightCreatedAt ?? 0).getTime() - new Date(leftCreatedAt ?? 0).getTime();
+  }
+
+  if (left == null) {
+    return 1;
+  }
+
+  if (right == null) {
+    return -1;
+  }
+
+  if (left === right) {
+    return new Date(rightCreatedAt ?? 0).getTime() - new Date(leftCreatedAt ?? 0).getTime();
+  }
+
+  return right - left;
 }
 
 function sortApplications(
@@ -65,6 +93,27 @@ function sortApplications(
         return left.companyName.localeCompare(right.companyName);
       case "companyDesc":
         return right.companyName.localeCompare(left.companyName);
+      case "interestHigh":
+        return compareRating(
+          left.interestRating,
+          right.interestRating,
+          left.createdAt,
+          right.createdAt,
+        );
+      case "skillFitHigh":
+        return compareRating(
+          left.skillFitRating,
+          right.skillFitRating,
+          left.createdAt,
+          right.createdAt,
+        );
+      case "priorityHigh":
+        return compareRating(
+          left.priorityRating,
+          right.priorityRating,
+          left.createdAt,
+          right.createdAt,
+        );
       case "newest":
       default:
         return new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime();
