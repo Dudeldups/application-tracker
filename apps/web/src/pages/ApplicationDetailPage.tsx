@@ -19,12 +19,13 @@ import {
 import { notifications } from "@mantine/notifications";
 import { useCallback, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Link, useParams } from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
 import { z } from "zod";
 
 import {
   createApplicationCommunication,
   createApplicationContact,
+  deleteApplication,
   getApplication,
   updateApplicationStatus,
 } from "../api/applications";
@@ -60,12 +61,14 @@ const communicationFormSchema = z.object({
 
 export function ApplicationDetailPage() {
   const { id = "" } = useParams();
+  const navigate = useNavigate();
   const [application, setApplication] = useState<ApplicationWithRelations | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmittingStatus, setIsSubmittingStatus] = useState(false);
   const [isSubmittingContact, setIsSubmittingContact] = useState(false);
   const [isSubmittingCommunication, setIsSubmittingCommunication] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const statusForm = useForm({
     resolver: zodResolver(statusFormSchema),
@@ -195,6 +198,41 @@ export function ApplicationDetailPage() {
     }
   }
 
+  async function handleDelete() {
+    if (!application) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Delete the application for ${application.companyName} - ${application.jobTitle}?`,
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setIsDeleting(true);
+
+    try {
+      await deleteApplication(application.id);
+      notifications.show({
+        color: "green",
+        message: "Application deleted.",
+      });
+      navigate("/applications");
+    } catch (deleteError) {
+      notifications.show({
+        color: "red",
+        message:
+          deleteError instanceof Error
+            ? deleteError.message
+            : "Application could not be deleted.",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
   if (isLoading) {
     return (
       <Group justify="center" p="xl">
@@ -223,6 +261,9 @@ export function ApplicationDetailPage() {
           <StatusBadge status={application.status} />
           <Button component={Link} to={`/applications/${application.id}/edit`} variant="light">
             Edit
+          </Button>
+          <Button color="red" variant="light" loading={isDeleting} onClick={handleDelete}>
+            Delete
           </Button>
         </Group>
       </Group>
