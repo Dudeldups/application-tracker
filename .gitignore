@@ -14,9 +14,6 @@ apps/web/.vite/
 apps/api/dist/
 
 # Prisma generated client
-# Wenn du den Client unter apps/api/src/generated/prisma erzeugst,
-# kannst du ihn entweder committen oder ignorieren.
-# Ich würde ihn für dein eigenes Projekt eher ignorieren:
 apps/api/src/generated/prisma/
 
 # logs
@@ -30,3 +27,5 @@ pnpm-debug.log*
 .DS_Store
 Thumbs.db
 .vscode/
+
+local/
