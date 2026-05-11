@@ -1,0 +1,32 @@
+# dependencies
+node_modules/
+
+# env files
+.env
+.env.local
+.env.*.local
+
+# Vite
+apps/web/dist/
+apps/web/.vite/
+
+# API build/output
+apps/api/dist/
+
+# Prisma generated client
+# Wenn du den Client unter apps/api/src/generated/prisma erzeugst,
+# kannst du ihn entweder committen oder ignorieren.
+# Ich würde ihn für dein eigenes Projekt eher ignorieren:
+apps/api/src/generated/prisma/
+
+# logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
