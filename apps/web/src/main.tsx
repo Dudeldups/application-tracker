@@ -2,15 +2,16 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { MantineProvider } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
+import { RouterProvider } from "react-router";
 
-import App from "./App.tsx";
+import { router } from "./router";
 import "./index.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <MantineProvider defaultColorScheme="auto">
       <Notifications />
-      <App />
+      <RouterProvider router={router} />
     </MantineProvider>
   </StrictMode>,
 );
