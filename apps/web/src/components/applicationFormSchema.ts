@@ -56,6 +56,15 @@ export const applicationFormSchema = z.object({
 
 export type ApplicationFormValues = z.infer<typeof applicationFormSchema>;
 
+function emptyStringToUndefined(value?: string) {
+  if (value == null) {
+    return undefined;
+  }
+
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : undefined;
+}
+
 export function buildApplicationFormValues(
   application?: Partial<ApplicationWithRelations>,
 ): ApplicationFormValues {
@@ -86,7 +95,24 @@ export function buildApplicationFormValues(
 
 export function toApplicationPayload(values: ApplicationFormValues) {
   return {
-    ...values,
+    companyName: values.companyName.trim(),
+    jobTitle: values.jobTitle.trim(),
+    location: emptyStringToUndefined(values.location),
+    remoteType: values.remoteType,
+    source: emptyStringToUndefined(values.source),
+    jobUrl: emptyStringToUndefined(values.jobUrl),
+    status: values.status,
+    foundAt: emptyStringToUndefined(values.foundAt),
+    appliedAt: emptyStringToUndefined(values.appliedAt),
+    lastContactAt: emptyStringToUndefined(values.lastContactAt),
+    followUpAt: emptyStringToUndefined(values.followUpAt),
+    jobAdText: emptyStringToUndefined(values.jobAdText),
+    cvVersion: emptyStringToUndefined(values.cvVersion),
+    coverLetterVersion: emptyStringToUndefined(values.coverLetterVersion),
+    usedCoverLetter: values.usedCoverLetter,
+    focusNotes: emptyStringToUndefined(values.focusNotes),
+    customizationNotes: emptyStringToUndefined(values.customizationNotes),
+    notes: emptyStringToUndefined(values.notes),
     interestRating: values.interestRating ?? undefined,
     skillFitRating: values.skillFitRating ?? undefined,
     priorityRating: values.priorityRating ?? undefined,
