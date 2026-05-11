@@ -7,6 +7,7 @@ import {
   Grid,
   Group,
   Loader,
+  Modal,
   Select,
   SimpleGrid,
   Stack,
@@ -16,6 +17,7 @@ import {
   Textarea,
   Title,
 } from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { useCallback, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -69,6 +71,8 @@ export function ApplicationDetailPage() {
   const [isSubmittingContact, setIsSubmittingContact] = useState(false);
   const [isSubmittingCommunication, setIsSubmittingCommunication] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeleteModalOpen, { open: openDeleteModal, close: closeDeleteModal }] =
+    useDisclosure(false);
 
   const statusForm = useForm({
     resolver: zodResolver(statusFormSchema),
@@ -203,18 +207,11 @@ export function ApplicationDetailPage() {
       return;
     }
 
-    const confirmed = window.confirm(
-      `Delete the application for ${application.companyName} - ${application.jobTitle}?`,
-    );
-
-    if (!confirmed) {
-      return;
-    }
-
     setIsDeleting(true);
 
     try {
       await deleteApplication(application.id);
+      closeDeleteModal();
       notifications.show({
         color: "green",
         message: "Application deleted.",
@@ -251,6 +248,37 @@ export function ApplicationDetailPage() {
 
   return (
     <Stack gap="md">
+      <Modal
+        opened={isDeleteModalOpen}
+        onClose={closeDeleteModal}
+        title="Delete application"
+        centered>
+        <Stack>
+          <Text>
+            Delete the application for{" "}
+            <Text component="span" fw={700}>
+              {application.companyName}
+            </Text>{" "}
+            as{" "}
+            <Text component="span" fw={700}>
+              {application.jobTitle}
+            </Text>
+            ?
+          </Text>
+          <Text c="dimmed" size="sm">
+            This action cannot be undone.
+          </Text>
+          <Group justify="flex-end">
+            <Button variant="default" onClick={closeDeleteModal} disabled={isDeleting}>
+              Cancel
+            </Button>
+            <Button color="red" onClick={handleDelete} loading={isDeleting}>
+              Delete
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
+
       <Group justify="space-between" align="start">
         <div>
           <Title order={1}>{application.companyName}</Title>
@@ -262,7 +290,11 @@ export function ApplicationDetailPage() {
           <Button component={Link} to={`/applications/${application.id}/edit`} variant="light">
             Edit
           </Button>
-          <Button color="red" variant="light" loading={isDeleting} onClick={handleDelete}>
+          <Button
+            color="red"
+            variant="light"
+            loading={isDeleting}
+            onClick={openDeleteModal}>
             Delete
           </Button>
         </Group>
