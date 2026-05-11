@@ -29,14 +29,20 @@ app.get("/health", (_req, res) => {
   res.json({ ok: true });
 });
 
+const applicationDetailInclude = {
+  contacts: true,
+  statusHistory: {
+    orderBy: { changedAt: "desc" as const },
+  },
+  communications: {
+    orderBy: { date: "desc" as const },
+  },
+};
+
 app.get("/applications", async (_req, res) => {
   const applications = await prisma.application.findMany({
     orderBy: { createdAt: "desc" },
-    include: {
-      contacts: true,
-      statusHistory: true,
-      communications: true,
-    },
+    include: applicationDetailInclude,
   });
 
   res.json(applications);
@@ -96,9 +102,7 @@ app.post("/applications", async (req, res) => {
         },
       },
     }),
-    include: {
-      statusHistory: true,
-    },
+    include: applicationDetailInclude,
   });
 
   res.status(201).json(application);
@@ -107,15 +111,7 @@ app.post("/applications", async (req, res) => {
 app.get("/applications/:id", async (req, res) => {
   const application = await prisma.application.findUnique({
     where: { id: req.params.id },
-    include: {
-      contacts: true,
-      statusHistory: {
-        orderBy: { changedAt: "desc" },
-      },
-      communications: {
-        orderBy: { date: "desc" },
-      },
-    },
+    include: applicationDetailInclude,
   });
 
   if (!application) {
@@ -174,6 +170,7 @@ app.patch("/applications/:id", async (req, res) => {
         skillFitRating: data.skillFitRating,
         priorityRating: data.priorityRating,
       }),
+      include: applicationDetailInclude,
     });
 
     res.json(application);
@@ -220,11 +217,7 @@ app.patch("/applications/:id/status", async (req, res) => {
           }),
         },
       },
-      include: {
-        statusHistory: {
-          orderBy: { changedAt: "desc" },
-        },
-      },
+      include: applicationDetailInclude,
     });
 
     res.json(application);
