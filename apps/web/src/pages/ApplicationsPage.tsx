@@ -13,10 +13,13 @@ import { IconPlus } from "@tabler/icons-react";
 import { Link } from "react-router";
 
 import { getApplications } from "../api/applications";
-import type { Application } from "../types/application";
+import { remoteTypeMeta } from "../lib/applicationMeta";
+import { formatDate } from "../lib/format";
+import { StatusBadge } from "../components/StatusBadge";
+import type { ApplicationWithRelations } from "../types/application";
 
 export function ApplicationsPage() {
-  const [applications, setApplications] = useState<Application[]>([]);
+  const [applications, setApplications] = useState<ApplicationWithRelations[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -75,6 +78,16 @@ export function ApplicationsPage() {
                 <div>
                   <Title order={3}>{application.companyName}</Title>
                   <Text c="dark">{application.jobTitle}</Text>
+                  <Group gap="xs" mt="xs">
+                    <Badge variant="outline">
+                      {remoteTypeMeta[application.remoteType]}
+                    </Badge>
+                    {application.followUpAt ? (
+                      <Badge color="orange" variant="light">
+                        Follow-up {formatDate(application.followUpAt)}
+                      </Badge>
+                    ) : null}
+                  </Group>
 
                   {application.source ? (
                     <Text size="sm" c="dimmed">
@@ -83,7 +96,7 @@ export function ApplicationsPage() {
                   ) : null}
                 </div>
 
-                <Badge>{application.status}</Badge>
+                <StatusBadge status={application.status} />
               </Group>
             </Card>
           ))}
