@@ -1,0 +1,31 @@
+{
+  "name": "application-tracker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently -n API,WEB -c blue,green \"npm run dev --prefix apps/api\" \"npm run dev --prefix apps/web\"",
+    "dev:api": "npm run dev --prefix apps/api",
+    "dev:web": "npm run dev --prefix apps/web",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "db:studio": "npm run db:studio --prefix apps/api",
+    "db:migrate": "npm run db:migrate --prefix apps/api",
+    "db:generate": "npm run db:generate --prefix apps/api"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dudeldups/application-tracker.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Dudeldups/application-tracker/issues"
+  },
+  "homepage": "https://github.com/Dudeldups/application-tracker#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
