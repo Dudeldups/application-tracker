@@ -434,7 +434,6 @@ export function ApplicationDetailPage() {
       <Card withBorder radius="md">
         <Stack>
           <Title order={3}>Notes</Title>
-          <Text>{application.focusNotes || "No focus notes."}</Text>
           <Text>{application.customizationNotes || "No customization notes."}</Text>
           <Text>{application.notes || "No general notes."}</Text>
           {application.jobAdText ? (

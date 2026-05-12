@@ -36,7 +36,6 @@ export type Application = {
   cvVersion?: string | null;
   coverLetterVersion?: string | null;
   usedCoverLetter: boolean;
-  focusNotes?: string | null;
   customizationNotes?: string | null;
   notes?: string | null;
   interestRating?: number | null;

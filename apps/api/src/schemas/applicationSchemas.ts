@@ -56,7 +56,6 @@ export const createApplicationSchema = z.object({
   coverLetterVersion: z.string().trim().optional(),
   usedCoverLetter: z.boolean().optional(),
 
-  focusNotes: z.string().optional(),
   customizationNotes: z.string().optional(),
   notes: z.string().optional(),
 

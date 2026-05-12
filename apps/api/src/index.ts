@@ -87,7 +87,6 @@ app.post("/applications", async (req, res) => {
       coverLetterVersion: emptyStringToUndefined(data.coverLetterVersion),
       usedCoverLetter: data.usedCoverLetter ?? false,
 
-      focusNotes: data.focusNotes,
       customizationNotes: data.customizationNotes,
       notes: data.notes,
 
@@ -162,7 +161,6 @@ app.patch("/applications/:id", async (req, res) => {
         coverLetterVersion: emptyStringToUndefined(data.coverLetterVersion),
         usedCoverLetter: data.usedCoverLetter,
 
-        focusNotes: data.focusNotes,
         customizationNotes: data.customizationNotes,
         notes: data.notes,
 

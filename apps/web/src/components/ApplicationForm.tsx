@@ -298,7 +298,6 @@ export function ApplicationForm({
               minRows={12}
               {...form.register("jobAdText")}
             />
-            <Textarea label="Focus notes" minRows={3} {...form.register("focusNotes")} />
             <Textarea
               label="Customization notes"
               minRows={3}
