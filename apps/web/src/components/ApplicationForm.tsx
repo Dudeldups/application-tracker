@@ -292,7 +292,12 @@ export function ApplicationForm({
 
         <Card withBorder radius="md">
           <Stack>
-            <Textarea label="Job ad text" minRows={12} {...form.register("jobAdText")} />
+            <Textarea
+              label="Job ad text"
+              autosize
+              minRows={12}
+              {...form.register("jobAdText")}
+            />
             <Textarea label="Focus notes" minRows={3} {...form.register("focusNotes")} />
             <Textarea
               label="Customization notes"
