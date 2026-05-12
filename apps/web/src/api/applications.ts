@@ -144,3 +144,12 @@ export function createApplicationCommunication(
     body: JSON.stringify(input),
   });
 }
+
+export function deleteApplicationCommunication(
+  applicationId: string,
+  communicationId: string,
+): Promise<void> {
+  return request<void>(`/applications/${applicationId}/communications/${communicationId}`, {
+    method: "DELETE",
+  });
+}

@@ -348,6 +348,28 @@ app.post("/applications/:id/contacts", async (req, res) => {
   }
 });
 
+app.delete("/applications/:id/communications/:communicationId", async (req, res) => {
+  const { id, communicationId } = req.params;
+
+  const communication = await prisma.communication.findFirst({
+    where: {
+      id: communicationId,
+      applicationId: id,
+    },
+  });
+
+  if (!communication) {
+    res.status(404).json({ error: "Communication not found" });
+    return;
+  }
+
+  await prisma.communication.delete({
+    where: { id: communicationId },
+  });
+
+  res.status(204).send();
+});
+
 app.delete("/applications/:id/contacts/:contactId", async (req, res) => {
   const { id, contactId } = req.params;
 
