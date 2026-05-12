@@ -348,16 +348,16 @@ export function ApplicationsPage() {
                 </Table.Th>
                 <Table.Th>
                   <SortableHeader
-                    label="Applied"
-                    column="appliedAt"
+                    label="Source"
+                    column="source"
                     sortState={sortState}
                     onSort={handleSort}
                   />
                 </Table.Th>
                 <Table.Th>
                   <SortableHeader
-                    label="Source"
-                    column="source"
+                    label="Applied"
+                    column="appliedAt"
                     sortState={sortState}
                     onSort={handleSort}
                   />
@@ -387,8 +387,8 @@ export function ApplicationsPage() {
                     <StatusBadge status={application.status} />
                   </Table.Td>
                   <Table.Td>{application.priorityRating}</Table.Td>
-                  <Table.Td>{formatDate(application.appliedAt)}</Table.Td>
                   <Table.Td>{application.source || "-"}</Table.Td>
+                  <Table.Td>{formatDate(application.appliedAt)}</Table.Td>
                   <Table.Td>{formatDate(application.followUpAt)}</Table.Td>
                 </Table.Tr>
               ))}
