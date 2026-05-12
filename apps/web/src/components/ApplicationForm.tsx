@@ -76,6 +76,13 @@ export function ApplicationForm({
                 />
               </Grid.Col>
               <Grid.Col span={{ base: 12, md: 6 }}>
+                <TextInput
+                  label="Address"
+                  {...form.register("address")}
+                  error={form.formState.errors.address?.message}
+                />
+              </Grid.Col>
+              <Grid.Col span={{ base: 12, md: 6 }}>
                 <Controller
                   control={form.control}
                   name="remoteType"

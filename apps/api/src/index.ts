@@ -67,6 +67,7 @@ app.post("/applications", async (req, res) => {
       companyName: data.companyName,
       jobTitle: data.jobTitle,
       city: emptyStringToUndefined(data.city),
+      address: emptyStringToUndefined(data.address),
       remoteType: data.remoteType,
 
       source: emptyStringToUndefined(data.source),
@@ -141,6 +142,7 @@ app.patch("/applications/:id", async (req, res) => {
         companyName: data.companyName,
         jobTitle: data.jobTitle,
         city: emptyStringToUndefined(data.city),
+        address: emptyStringToUndefined(data.address),
         remoteType: data.remoteType,
 
         source: emptyStringToUndefined(data.source),

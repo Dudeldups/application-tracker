@@ -38,6 +38,7 @@ export const createApplicationSchema = z.object({
   jobTitle: z.string().trim().min(1, "jobTitle is required"),
 
   city: z.string().trim().optional(),
+  address: z.string().trim().optional(),
   remoteType: remoteTypeSchema.optional(),
 
   source: z.string().trim().optional(),

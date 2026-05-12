@@ -35,6 +35,7 @@ model Application {
   companyName String
   jobTitle    String
   city        String?
+  address     String?
   remoteType  RemoteType @default(unknown)
 
   source String?

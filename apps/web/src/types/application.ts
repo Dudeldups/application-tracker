@@ -24,6 +24,7 @@ export type Application = {
   companyName: string;
   jobTitle: string;
   city?: string | null;
+  address?: string | null;
   remoteType: RemoteType;
   source?: string | null;
   jobUrl?: string | null;

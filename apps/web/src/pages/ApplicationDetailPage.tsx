@@ -400,6 +400,7 @@ export function ApplicationDetailPage() {
           <Stack gap="xs">
             <Title order={3}>Overview</Title>
             <Text>City: {application.city || "Not set"}</Text>
+            <Text>Address: {application.address || "Not set"}</Text>
             <Text>Source: {application.source || "Not set"}</Text>
             <Text>Found: {formatDate(application.foundAt)}</Text>
             <Text>Applied: {formatDate(application.appliedAt)}</Text>
