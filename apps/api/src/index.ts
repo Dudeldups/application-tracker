@@ -5,6 +5,7 @@ import { PrismaClient } from "./generated/prisma/client.js";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { createApplicationsRouter } from "./routes/applications.js";
 import { createHealthRouter } from "./routes/health.js";
+import path from "node:path";
 
 dotenv.config();
 
@@ -21,6 +22,16 @@ app.use(express.json());
 
 app.use("/api/health", createHealthRouter());
 app.use("/api/applications", createApplicationsRouter(prisma));
+
+const staticDir = process.env.STATIC_DIR;
+
+if (staticDir) {
+  app.use(express.static(staticDir));
+
+  app.get(/.*/, (_req, res) => {
+    res.sendFile(path.join(staticDir, "index.html"));
+  });
+}
 
 const port = Number(process.env.PORT ?? 3001);
 
