@@ -289,7 +289,11 @@ export function ApplicationDetailPage() {
 
         <Group>
           <StatusBadge status={application.status} />
-          <Button component={Link} to={`/applications/${application.id}/edit`} variant="light">
+          <Button
+            component={Link}
+            to={`/applications/${application.id}/edit`}
+            variant="outline"
+            color="green">
             Edit
           </Button>
           <Button
