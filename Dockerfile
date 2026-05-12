@@ -1,5 +1,5 @@
 # ---------- Build frontend ----------
-FROM node:24-alpine AS web-builder
+FROM node:22-alpine AS web-builder
 
 WORKDIR /app/apps/web
 
@@ -14,7 +14,7 @@ RUN npm run build
 
 
 # ---------- Build API ----------
-FROM node:24-alpine AS api-builder
+FROM node:22-alpine AS api-builder
 
 WORKDIR /app/apps/api
 
@@ -26,7 +26,7 @@ RUN npm run build
 
 
 # ---------- Production runtime ----------
-FROM node:24-alpine AS runner
+FROM node:22-alpine AS runner
 
 WORKDIR /app/apps/api
 
