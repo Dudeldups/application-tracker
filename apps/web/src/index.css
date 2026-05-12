@@ -69,7 +69,7 @@ body {
 }
 
 .mantine-NavLink-root[data-active="true"] {
-  background-color: rgba(103, 232, 249, 0.14);
+  background-color: rgba(73, 226, 127, 0.16);
 }
 
 .mantine-Input-input,
@@ -79,6 +79,16 @@ body {
   background-color: #1a1f27;
   border-color: #2b3340;
   color: var(--app-text);
+}
+
+.mantine-Input-input:focus,
+.mantine-Textarea-input:focus,
+.mantine-Select-input:focus,
+.mantine-Input-input:focus-within,
+.mantine-Textarea-input:focus-within,
+.mantine-Select-input:focus-within {
+  border-color: #49e27f;
+  box-shadow: 0 0 0 1px rgba(73, 226, 127, 0.2);
 }
 
 .mantine-Input-input::placeholder,
@@ -92,5 +102,5 @@ body {
 }
 
 a {
-  color: #7dd3fc;
+  color: #86efac;
 }

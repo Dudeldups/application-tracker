@@ -8,7 +8,7 @@ import { router } from "./router";
 import "./index.css";
 
 const theme = createTheme({
-  primaryColor: "cyan",
+  primaryColor: "green",
   colors: {
     dark: [
       "#c9d1d9",
@@ -21,6 +21,18 @@ const theme = createTheme({
       "#101319",
       "#0d1015",
       "#090b10",
+    ],
+    green: [
+      "#e8fff1",
+      "#cff8de",
+      "#9ff1bd",
+      "#6fe99b",
+      "#49e27f",
+      "#33de6f",
+      "#25c45d",
+      "#17984a",
+      "#0d6d35",
+      "#044321",
     ],
   },
 });
