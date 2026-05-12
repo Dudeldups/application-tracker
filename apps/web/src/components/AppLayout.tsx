@@ -15,7 +15,7 @@ export function AppLayout() {
         breakpoint: "sm",
         collapsed: { mobile: !opened },
       }}
-      padding="md"
+      padding={{ base: "xs", sm: "md" }}
       styles={{
         main: {
           backgroundColor: "var(--app-bg)",
@@ -30,7 +30,10 @@ export function AppLayout() {
         },
       }}>
       <AppShell.Header>
-        <Container size="xl" className="flex h-full items-center justify-between">
+        <Container
+          size="xl"
+          px={{ base: "xs", sm: "md" }}
+          className="flex h-full items-center justify-between">
           <Group gap="sm">
             <Burger
               opened={opened}
@@ -66,7 +69,7 @@ export function AppLayout() {
       </AppShell.Navbar>
 
       <AppShell.Main>
-        <Container size="xl">
+        <Container size="xl" px={{ base: "xs", sm: "md" }}>
           <Outlet />
         </Container>
       </AppShell.Main>
