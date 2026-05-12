@@ -29,3 +29,5 @@ Thumbs.db
 .vscode/
 
 local/
+docker-compose*
+!docker-compose.example.yml
