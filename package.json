@@ -10,7 +10,7 @@
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
     "db:studio": "npm run db:studio --prefix apps/api",
-    "db:migrate": "npm run db:migrate --prefix apps/api",
+    "db:migrate": "npm run db:migrate:dev --prefix apps/api",
     "db:generate": "npm run db:generate --prefix apps/api"
   },
   "repository": {
