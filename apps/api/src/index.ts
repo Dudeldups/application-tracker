@@ -25,7 +25,7 @@ const prisma = new PrismaClient({ adapter });
 app.use(cors({ origin: "http://localhost:5173" }));
 app.use(express.json());
 
-app.get("/health", (_req, res) => {
+app.get("/api/health", (_req, res) => {
   res.json({ ok: true });
 });
 
@@ -39,7 +39,7 @@ const applicationDetailInclude = {
   },
 };
 
-app.get("/applications", async (_req, res) => {
+app.get("/api/applications", async (_req, res) => {
   const applications = await prisma.application.findMany({
     orderBy: { createdAt: "desc" },
     include: applicationDetailInclude,
@@ -48,7 +48,7 @@ app.get("/applications", async (_req, res) => {
   res.json(applications);
 });
 
-app.post("/applications", async (req, res) => {
+app.post("/api/applications", async (req, res) => {
   const result = createApplicationSchema.safeParse(req.body);
 
   if (!result.success) {
@@ -108,7 +108,7 @@ app.post("/applications", async (req, res) => {
   res.status(201).json(application);
 });
 
-app.get("/applications/:id", async (req, res) => {
+app.get("/api/applications/:id", async (req, res) => {
   const application = await prisma.application.findUnique({
     where: { id: req.params.id },
     include: applicationDetailInclude,
@@ -122,7 +122,7 @@ app.get("/applications/:id", async (req, res) => {
   res.json(application);
 });
 
-app.patch("/applications/:id", async (req, res) => {
+app.patch("/api/applications/:id", async (req, res) => {
   const result = updateApplicationSchema.safeParse(req.body);
 
   if (!result.success) {
@@ -180,7 +180,7 @@ app.patch("/applications/:id", async (req, res) => {
   }
 });
 
-app.delete("/applications/:id", async (req, res) => {
+app.delete("/api/applications/:id", async (req, res) => {
   try {
     await prisma.application.delete({
       where: { id: req.params.id },
@@ -192,7 +192,7 @@ app.delete("/applications/:id", async (req, res) => {
   }
 });
 
-app.patch("/applications/:id/status", async (req, res) => {
+app.patch("/api/applications/:id/status", async (req, res) => {
   const result = updateStatusSchema.safeParse(req.body);
 
   if (!result.success) {
@@ -226,68 +226,75 @@ app.patch("/applications/:id/status", async (req, res) => {
   }
 });
 
-app.delete("/applications/:id/status-history/:statusHistoryId", async (req, res) => {
-  const { id, statusHistoryId } = req.params;
+app.delete(
+  "/api/applications/:id/status-history/:statusHistoryId",
+  async (req, res) => {
+    const { id, statusHistoryId } = req.params;
 
-  const application = await prisma.application.findUnique({
-    where: { id },
-    include: {
-      statusHistory: {
-        orderBy: { changedAt: "asc" },
-      },
-    },
-  });
-
-  if (!application) {
-    res.status(404).json({ error: "Application not found" });
-    return;
-  }
-
-  const targetEntry = application.statusHistory.find(entry => entry.id === statusHistoryId);
-
-  if (!targetEntry) {
-    res.status(404).json({ error: "Status entry not found" });
-    return;
-  }
-
-  const initialEntry = application.statusHistory[0];
-
-  if (!initialEntry || initialEntry.id === statusHistoryId) {
-    res.status(400).json({ error: "Initial status cannot be deleted" });
-    return;
-  }
-
-  const remainingEntries = application.statusHistory.filter(
-    entry => entry.id !== statusHistoryId,
-  );
-  const latestRemainingEntry = remainingEntries[remainingEntries.length - 1];
-
-  if (!latestRemainingEntry) {
-    res.status(400).json({ error: "Application must keep at least one status entry" });
-    return;
-  }
-
-  await prisma.$transaction([
-    prisma.statusHistory.delete({
-      where: { id: statusHistoryId },
-    }),
-    prisma.application.update({
+    const application = await prisma.application.findUnique({
       where: { id },
-      data: {
-        status: latestRemainingEntry.status,
+      include: {
+        statusHistory: {
+          orderBy: { changedAt: "asc" },
+        },
       },
-    }),
-  ]);
+    });
 
-  const updatedApplication = await prisma.application.findUnique({
-    where: { id },
-    include: applicationDetailInclude,
-  });
+    if (!application) {
+      res.status(404).json({ error: "Application not found" });
+      return;
+    }
 
-  res.json(updatedApplication);
-});
+    const targetEntry = application.statusHistory.find(
+      entry => entry.id === statusHistoryId,
+    );
 
-app.post("/applications/:id/communications", async (req, res) => {
+    if (!targetEntry) {
+      res.status(404).json({ error: "Status entry not found" });
+      return;
+    }
+
+    const initialEntry = application.statusHistory[0];
+
+    if (!initialEntry || initialEntry.id === statusHistoryId) {
+      res.status(400).json({ error: "Initial status cannot be deleted" });
+      return;
+    }
+
+    const remainingEntries = application.statusHistory.filter(
+      entry => entry.id !== statusHistoryId,
+    );
+    const latestRemainingEntry = remainingEntries[remainingEntries.length - 1];
+
+    if (!latestRemainingEntry) {
+      res
+        .status(400)
+        .json({ error: "Application must keep at least one status entry" });
+      return;
+    }
+
+    await prisma.$transaction([
+      prisma.statusHistory.delete({
+        where: { id: statusHistoryId },
+      }),
+      prisma.application.update({
+        where: { id },
+        data: {
+          status: latestRemainingEntry.status,
+        },
+      }),
+    ]);
+
+    const updatedApplication = await prisma.application.findUnique({
+      where: { id },
+      include: applicationDetailInclude,
+    });
+
+    res.json(updatedApplication);
+  },
+);
+
+app.post("/api/applications/:id/communications", async (req, res) => {
   const result = createCommunicationSchema.safeParse(req.body);
 
   if (!result.success) {
@@ -318,7 +325,7 @@ app.post("/applications/:id/communications", async (req, res) => {
   }
 });
 
-app.post("/applications/:id/contacts", async (req, res) => {
+app.post("/api/applications/:id/contacts", async (req, res) => {
   const result = createContactSchema.safeParse(req.body);
 
   if (!result.success) {
@@ -348,29 +355,32 @@ app.post("/applications/:id/contacts", async (req, res) => {
   }
 });
 
-app.delete("/applications/:id/communications/:communicationId", async (req, res) => {
-  const { id, communicationId } = req.params;
+app.delete(
+  "/api/applications/:id/communications/:communicationId",
+  async (req, res) => {
+    const { id, communicationId } = req.params;
 
-  const communication = await prisma.communication.findFirst({
-    where: {
-      id: communicationId,
-      applicationId: id,
-    },
-  });
+    const communication = await prisma.communication.findFirst({
+      where: {
+        id: communicationId,
+        applicationId: id,
+      },
+    });
 
-  if (!communication) {
-    res.status(404).json({ error: "Communication not found" });
-    return;
-  }
+    if (!communication) {
+      res.status(404).json({ error: "Communication not found" });
+      return;
+    }
 
-  await prisma.communication.delete({
-    where: { id: communicationId },
-  });
+    await prisma.communication.delete({
+      where: { id: communicationId },
+    });
 
-  res.status(204).send();
-});
+    res.status(204).send();
+  },
+);
 
-app.delete("/applications/:id/contacts/:contactId", async (req, res) => {
+app.delete("/api/applications/:id/contacts/:contactId", async (req, res) => {
   const { id, contactId } = req.params;
 
   const contact = await prisma.contact.findFirst({
