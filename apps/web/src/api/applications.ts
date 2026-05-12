@@ -104,6 +104,18 @@ export function updateApplicationStatus(
   });
 }
 
+export function deleteApplicationStatusHistoryEntry(
+  applicationId: string,
+  statusHistoryId: string,
+): Promise<ApplicationWithRelations> {
+  return request<ApplicationWithRelations>(
+    `/applications/${applicationId}/status-history/${statusHistoryId}`,
+    {
+      method: "DELETE",
+    },
+  );
+}
+
 export function createApplicationContact(
   id: string,
   input: ContactInput,
