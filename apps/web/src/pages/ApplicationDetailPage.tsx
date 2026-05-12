@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  Anchor,
   ActionIcon,
+  Anchor,
   Button,
   Card,
   Divider,
@@ -30,6 +30,7 @@ import {
   createApplicationCommunication,
   createApplicationContact,
   deleteApplication,
+  deleteApplicationCommunication,
   deleteApplicationContact,
   deleteApplicationStatusHistoryEntry,
   getApplication,
@@ -78,12 +79,17 @@ export function ApplicationDetailPage() {
   const [isSubmittingCommunication, setIsSubmittingCommunication] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isDeletingContact, setIsDeletingContact] = useState(false);
+  const [isDeletingCommunication, setIsDeletingCommunication] = useState(false);
   const [isDeletingStatusEntry, setIsDeletingStatusEntry] = useState(false);
   const [statusEntryToDelete, setStatusEntryToDelete] = useState<{
     id: string;
     status: string;
   } | null>(null);
   const [contactToDelete, setContactToDelete] = useState<{
+    id: string;
+    label: string;
+  } | null>(null);
+  const [communicationToDelete, setCommunicationToDelete] = useState<{
     id: string;
     label: string;
   } | null>(null);
@@ -96,6 +102,10 @@ export function ApplicationDetailPage() {
   const [
     isContactDeleteModalOpen,
     { open: openContactDeleteModal, close: closeContactDeleteModal },
+  ] = useDisclosure(false);
+  const [
+    isCommunicationDeleteModalOpen,
+    { open: openCommunicationDeleteModal, close: closeCommunicationDeleteModal },
   ] = useDisclosure(false);
 
   const statusForm = useForm({
@@ -314,6 +324,35 @@ export function ApplicationDetailPage() {
     }
   }
 
+  async function handleDeleteCommunication() {
+    if (!communicationToDelete) {
+      return;
+    }
+
+    setIsDeletingCommunication(true);
+
+    try {
+      await deleteApplicationCommunication(id, communicationToDelete.id);
+      await loadApplication();
+      closeCommunicationDeleteModal();
+      setCommunicationToDelete(null);
+      notifications.show({
+        color: "green",
+        message: "Communication deleted.",
+      });
+    } catch (deleteError) {
+      notifications.show({
+        color: "red",
+        message:
+          deleteError instanceof Error
+            ? deleteError.message
+            : "Communication could not be deleted.",
+      });
+    } finally {
+      setIsDeletingCommunication(false);
+    }
+  }
+
   const initialStatusEntryId =
     application?.statusHistory[application.statusHistory.length - 1]?.id;
 
@@ -441,6 +480,49 @@ export function ApplicationDetailPage() {
               Cancel
             </Button>
             <Button color="red" onClick={handleDeleteContact} loading={isDeletingContact}>
+              Delete
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
+      <Modal
+        opened={isCommunicationDeleteModalOpen}
+        onClose={() => {
+          closeCommunicationDeleteModal();
+          setCommunicationToDelete(null);
+        }}
+        title="Delete communication"
+        centered>
+        <Stack>
+          <Text>
+            Delete this communication entry
+            {communicationToDelete ? (
+              <>
+                {" "}
+                <Text component="span" fw={700}>
+                  {communicationToDelete.label}
+                </Text>
+              </>
+            ) : null}
+            ?
+          </Text>
+          <Text c="dimmed" size="sm">
+            This action cannot be undone.
+          </Text>
+          <Group justify="flex-end">
+            <Button
+              variant="default"
+              onClick={() => {
+                closeCommunicationDeleteModal();
+                setCommunicationToDelete(null);
+              }}
+              disabled={isDeletingCommunication}>
+              Cancel
+            </Button>
+            <Button
+              color="red"
+              onClick={handleDeleteCommunication}
+              loading={isDeletingCommunication}>
               Delete
             </Button>
           </Group>
@@ -722,16 +804,33 @@ export function ApplicationDetailPage() {
               <Stack gap="sm">
                 {application.communications.map(entry => (
                   <Card key={entry.id} withBorder>
-                    <Group justify="space-between">
-                      <Text fw={600}>{entry.summary}</Text>
-                      <Text size="sm" c="dimmed">
-                        {formatDate(entry.date)}
-                      </Text>
+                    <Group justify="space-between" align="start" wrap="nowrap">
+                      <Stack gap={2} flex={1}>
+                        <Group justify="space-between" wrap="nowrap">
+                          <Text fw={600}>{entry.summary}</Text>
+                          <Text size="sm" c="dimmed">
+                            {formatDate(entry.date)}
+                          </Text>
+                        </Group>
+                        <Text size="sm">
+                          {entry.type} · {entry.direction}
+                        </Text>
+                        {entry.body ? <Text size="sm">{entry.body}</Text> : null}
+                      </Stack>
+                      <ActionIcon
+                        variant="subtle"
+                        color="red"
+                        aria-label="Delete communication"
+                        onClick={() => {
+                          setCommunicationToDelete({
+                            id: entry.id,
+                            label: entry.summary,
+                          });
+                          openCommunicationDeleteModal();
+                        }}>
+                        <IconTrash size={16} />
+                      </ActionIcon>
                     </Group>
-                    <Text size="sm">
-                      {entry.type} · {entry.direction}
-                    </Text>
-                    {entry.body ? <Text size="sm">{entry.body}</Text> : null}
                   </Card>
                 ))}
               </Stack>
