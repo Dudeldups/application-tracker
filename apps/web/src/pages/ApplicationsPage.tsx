@@ -10,6 +10,7 @@ import {
   Table,
   TableScrollContainer,
   Text,
+  TextInput,
   Title,
   UnstyledButton,
 } from "@mantine/core";
@@ -231,6 +232,7 @@ export function ApplicationsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<FilterOption>("open");
+  const [searchQuery, setSearchQuery] = useState("");
   const [sortState, setSortState] = useState<SortState>(initialSort);
 
   useEffect(() => {
@@ -262,16 +264,27 @@ export function ApplicationsPage() {
     });
   }
 
+  const normalizedSearchQuery = searchQuery.trim().toLowerCase();
+
   const filteredApplications = applications.filter(application => {
-    if (statusFilter === "all") {
+    const matchesStatusFilter =
+      statusFilter === "all"
+        ? true
+        : statusFilter === "finished"
+          ? finishedStatuses.includes(application.status)
+          : !finishedStatuses.includes(application.status);
+
+    if (!matchesStatusFilter) {
+      return false;
+    }
+
+    if (!normalizedSearchQuery) {
       return true;
     }
 
-    if (statusFilter === "finished") {
-      return finishedStatuses.includes(application.status);
-    }
-
-    return !finishedStatuses.includes(application.status);
+    return [application.companyName, application.jobTitle, application.location]
+      .filter(Boolean)
+      .some(value => value!.toLowerCase().includes(normalizedSearchQuery));
   });
 
   const sortedApplications = sortApplications(filteredApplications, sortState);
@@ -292,7 +305,15 @@ export function ApplicationsPage() {
         </Button>
       </Group>
 
-      <Group justify="flex-end">
+      <Group justify="space-between" align="end">
+        <TextInput
+          label="Search"
+          placeholder="Company, position, location"
+          value={searchQuery}
+          onChange={event => setSearchQuery(event.currentTarget.value)}
+          flex={1}
+          maw={420}
+        />
         <Select
           label="Filter"
           data={filterOptions}
