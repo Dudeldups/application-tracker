@@ -348,6 +348,28 @@ app.post("/applications/:id/contacts", async (req, res) => {
   }
 });
 
+app.delete("/applications/:id/contacts/:contactId", async (req, res) => {
+  const { id, contactId } = req.params;
+
+  const contact = await prisma.contact.findFirst({
+    where: {
+      id: contactId,
+      applicationId: id,
+    },
+  });
+
+  if (!contact) {
+    res.status(404).json({ error: "Contact not found" });
+    return;
+  }
+
+  await prisma.contact.delete({
+    where: { id: contactId },
+  });
+
+  res.status(204).send();
+});
+
 const port = Number(process.env.PORT ?? 3001);
 
 app.listen(port, () => {

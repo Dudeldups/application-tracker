@@ -126,6 +126,15 @@ export function createApplicationContact(
   });
 }
 
+export function deleteApplicationContact(
+  applicationId: string,
+  contactId: string,
+): Promise<void> {
+  return request<void>(`/applications/${applicationId}/contacts/${contactId}`, {
+    method: "DELETE",
+  });
+}
+
 export function createApplicationCommunication(
   id: string,
   input: CommunicationInput,

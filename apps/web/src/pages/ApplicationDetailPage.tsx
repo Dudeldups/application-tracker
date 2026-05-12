@@ -30,6 +30,7 @@ import {
   createApplicationCommunication,
   createApplicationContact,
   deleteApplication,
+  deleteApplicationContact,
   deleteApplicationStatusHistoryEntry,
   getApplication,
   updateApplicationStatus,
@@ -76,16 +77,25 @@ export function ApplicationDetailPage() {
   const [isSubmittingContact, setIsSubmittingContact] = useState(false);
   const [isSubmittingCommunication, setIsSubmittingCommunication] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeletingContact, setIsDeletingContact] = useState(false);
   const [isDeletingStatusEntry, setIsDeletingStatusEntry] = useState(false);
   const [statusEntryToDelete, setStatusEntryToDelete] = useState<{
     id: string;
     status: string;
+  } | null>(null);
+  const [contactToDelete, setContactToDelete] = useState<{
+    id: string;
+    label: string;
   } | null>(null);
   const [isDeleteModalOpen, { open: openDeleteModal, close: closeDeleteModal }] =
     useDisclosure(false);
   const [
     isStatusDeleteModalOpen,
     { open: openStatusDeleteModal, close: closeStatusDeleteModal },
+  ] = useDisclosure(false);
+  const [
+    isContactDeleteModalOpen,
+    { open: openContactDeleteModal, close: closeContactDeleteModal },
   ] = useDisclosure(false);
 
   const statusForm = useForm({
@@ -277,6 +287,33 @@ export function ApplicationDetailPage() {
     }
   }
 
+  async function handleDeleteContact() {
+    if (!contactToDelete) {
+      return;
+    }
+
+    setIsDeletingContact(true);
+
+    try {
+      await deleteApplicationContact(id, contactToDelete.id);
+      await loadApplication();
+      closeContactDeleteModal();
+      setContactToDelete(null);
+      notifications.show({
+        color: "green",
+        message: "Contact deleted.",
+      });
+    } catch (deleteError) {
+      notifications.show({
+        color: "red",
+        message:
+          deleteError instanceof Error ? deleteError.message : "Contact could not be deleted.",
+      });
+    } finally {
+      setIsDeletingContact(false);
+    }
+  }
+
   const initialStatusEntryId =
     application?.statusHistory[application.statusHistory.length - 1]?.id;
 
@@ -364,6 +401,46 @@ export function ApplicationDetailPage() {
               Cancel
             </Button>
             <Button color="red" onClick={handleDeleteStatusEntry} loading={isDeletingStatusEntry}>
+              Delete
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
+      <Modal
+        opened={isContactDeleteModalOpen}
+        onClose={() => {
+          closeContactDeleteModal();
+          setContactToDelete(null);
+        }}
+        title="Delete contact"
+        centered>
+        <Stack>
+          <Text>
+            Delete this contact
+            {contactToDelete ? (
+              <>
+                {" "}
+                <Text component="span" fw={700}>
+                  {contactToDelete.label}
+                </Text>
+              </>
+            ) : null}
+            ?
+          </Text>
+          <Text c="dimmed" size="sm">
+            This action cannot be undone.
+          </Text>
+          <Group justify="flex-end">
+            <Button
+              variant="default"
+              onClick={() => {
+                closeContactDeleteModal();
+                setContactToDelete(null);
+              }}
+              disabled={isDeletingContact}>
+              Cancel
+            </Button>
+            <Button color="red" onClick={handleDeleteContact} loading={isDeletingContact}>
               Delete
             </Button>
           </Group>
@@ -566,10 +643,27 @@ export function ApplicationDetailPage() {
               <Stack gap="sm">
                 {application.contacts.map(contact => (
                   <Card key={contact.id} withBorder>
-                    <Text fw={600}>{contact.name || "Unnamed contact"}</Text>
-                    <Text size="sm">{contact.role || "No role added"}</Text>
-                    <Text size="sm">{contact.email || "No email"}</Text>
-                    <Text size="sm">{contact.phone || "No phone number"}</Text>
+                    <Group justify="space-between" align="start" wrap="nowrap">
+                      <Stack gap={2}>
+                        <Text fw={600}>{contact.name || "Unnamed contact"}</Text>
+                        <Text size="sm">{contact.role || "No role added"}</Text>
+                        <Text size="sm">{contact.email || "No email"}</Text>
+                        <Text size="sm">{contact.phone || "No phone number"}</Text>
+                      </Stack>
+                      <ActionIcon
+                        variant="subtle"
+                        color="red"
+                        aria-label="Delete contact"
+                        onClick={() => {
+                          setContactToDelete({
+                            id: contact.id,
+                            label: contact.name || contact.email || contact.phone || "contact",
+                          });
+                          openContactDeleteModal();
+                        }}>
+                        <IconTrash size={16} />
+                      </ActionIcon>
+                    </Group>
                   </Card>
                 ))}
               </Stack>
