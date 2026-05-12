@@ -70,7 +70,7 @@ export function ApplicationForm({
               </Grid.Col>
               <Grid.Col span={{ base: 12, md: 6 }}>
                 <TextInput
-                  label="Location"
+                  label="City"
                   {...form.register("location")}
                   error={form.formState.errors.location?.message}
                 />

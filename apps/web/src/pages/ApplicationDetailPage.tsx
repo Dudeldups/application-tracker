@@ -399,7 +399,7 @@ export function ApplicationDetailPage() {
         <Card withBorder radius="md">
           <Stack gap="xs">
             <Title order={3}>Overview</Title>
-            <Text>Location: {application.location || "Not set"}</Text>
+            <Text>City: {application.location || "Not set"}</Text>
             <Text>Source: {application.source || "Not set"}</Text>
             <Text>Found: {formatDate(application.foundAt)}</Text>
             <Text>Applied: {formatDate(application.appliedAt)}</Text>

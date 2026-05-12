@@ -308,7 +308,7 @@ export function ApplicationsPage() {
       <Group justify="space-between" align="end">
         <TextInput
           label="Search"
-          placeholder="Company, position, location"
+          placeholder="Company, position, city"
           value={searchQuery}
           onChange={event => setSearchQuery(event.currentTarget.value)}
           flex={1}
@@ -362,8 +362,8 @@ export function ApplicationsPage() {
                     />
                   </Table.Th>
                   <Table.Th>
-                    <SortableHeader
-                      label="Location"
+                  <SortableHeader
+                      label="City"
                       column="location"
                       sortState={sortState}
                       onSort={handleSort}
@@ -428,7 +428,7 @@ export function ApplicationsPage() {
                       </Anchor>
                     </Table.Td>
                     <Table.Td>{application.jobTitle}</Table.Td>
-                    <Table.Td>{application.location || "No location"}</Table.Td>
+                    <Table.Td>{application.location || "No city"}</Table.Td>
                     <Table.Td>{remoteTypeMeta[application.remoteType]}</Table.Td>
                     <Table.Td>
                       <StatusBadge status={application.status} />
