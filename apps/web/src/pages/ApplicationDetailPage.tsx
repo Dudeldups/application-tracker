@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Anchor,
+  ActionIcon,
   Button,
   Card,
   Divider,
@@ -19,6 +20,7 @@ import {
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
+import { IconTrash } from "@tabler/icons-react";
 import { useCallback, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Link, useNavigate, useParams } from "react-router";
@@ -28,6 +30,7 @@ import {
   createApplicationCommunication,
   createApplicationContact,
   deleteApplication,
+  deleteApplicationStatusHistoryEntry,
   getApplication,
   updateApplicationStatus,
 } from "../api/applications";
@@ -73,8 +76,17 @@ export function ApplicationDetailPage() {
   const [isSubmittingContact, setIsSubmittingContact] = useState(false);
   const [isSubmittingCommunication, setIsSubmittingCommunication] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeletingStatusEntry, setIsDeletingStatusEntry] = useState(false);
+  const [statusEntryToDelete, setStatusEntryToDelete] = useState<{
+    id: string;
+    status: string;
+  } | null>(null);
   const [isDeleteModalOpen, { open: openDeleteModal, close: closeDeleteModal }] =
     useDisclosure(false);
+  const [
+    isStatusDeleteModalOpen,
+    { open: openStatusDeleteModal, close: closeStatusDeleteModal },
+  ] = useDisclosure(false);
 
   const statusForm = useForm({
     resolver: zodResolver(statusFormSchema),
@@ -232,6 +244,42 @@ export function ApplicationDetailPage() {
     }
   }
 
+  async function handleDeleteStatusEntry() {
+    if (!statusEntryToDelete) {
+      return;
+    }
+
+    setIsDeletingStatusEntry(true);
+
+    try {
+      const updated = await deleteApplicationStatusHistoryEntry(id, statusEntryToDelete.id);
+      setApplication(updated);
+      statusForm.reset({
+        status: updated.status,
+        note: "",
+      });
+      closeStatusDeleteModal();
+      setStatusEntryToDelete(null);
+      notifications.show({
+        color: "green",
+        message: "Status entry deleted.",
+      });
+    } catch (deleteError) {
+      notifications.show({
+        color: "red",
+        message:
+          deleteError instanceof Error
+            ? deleteError.message
+            : "Status entry could not be deleted.",
+      });
+    } finally {
+      setIsDeletingStatusEntry(false);
+    }
+  }
+
+  const initialStatusEntryId =
+    application?.statusHistory[application.statusHistory.length - 1]?.id;
+
   if (isLoading) {
     return (
       <Group justify="center" p="xl">
@@ -275,6 +323,47 @@ export function ApplicationDetailPage() {
               Cancel
             </Button>
             <Button color="red" onClick={handleDelete} loading={isDeleting}>
+              Delete
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
+      <Modal
+        opened={isStatusDeleteModalOpen}
+        onClose={() => {
+          closeStatusDeleteModal();
+          setStatusEntryToDelete(null);
+        }}
+        title="Delete status change"
+        centered>
+        <Stack>
+          <Text>
+            Delete this status change
+            {statusEntryToDelete ? (
+              <>
+                {" "}
+                for{" "}
+                <Text component="span" fw={700}>
+                  {statusEntryToDelete.status}
+                </Text>
+              </>
+            ) : null}
+            ?
+          </Text>
+          <Text c="dimmed" size="sm">
+            The application status will fall back to the latest remaining entry if needed.
+          </Text>
+          <Group justify="flex-end">
+            <Button
+              variant="default"
+              onClick={() => {
+                closeStatusDeleteModal();
+                setStatusEntryToDelete(null);
+              }}
+              disabled={isDeletingStatusEntry}>
+              Cancel
+            </Button>
+            <Button color="red" onClick={handleDeleteStatusEntry} loading={isDeletingStatusEntry}>
               Delete
             </Button>
           </Group>
@@ -398,6 +487,7 @@ export function ApplicationDetailPage() {
                 <Table.Th>Date</Table.Th>
                 <Table.Th>Status</Table.Th>
                 <Table.Th>Note</Table.Th>
+                <Table.Th w={56}></Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
@@ -408,6 +498,23 @@ export function ApplicationDetailPage() {
                     <StatusBadge status={entry.status} />
                   </Table.Td>
                   <Table.Td>{entry.note || "-"}</Table.Td>
+                  <Table.Td>
+                    {entry.id !== initialStatusEntryId ? (
+                      <ActionIcon
+                        variant="subtle"
+                        color="red"
+                        aria-label="Delete status entry"
+                        onClick={() => {
+                          setStatusEntryToDelete({
+                            id: entry.id,
+                            status: entry.status,
+                          });
+                          openStatusDeleteModal();
+                        }}>
+                        <IconTrash size={16} />
+                      </ActionIcon>
+                    ) : null}
+                  </Table.Td>
                 </Table.Tr>
               ))}
             </Table.Tbody>
