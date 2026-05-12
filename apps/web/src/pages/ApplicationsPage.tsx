@@ -58,6 +58,20 @@ const initialSort: SortState = {
   direction: "asc",
 };
 
+function isPastDate(value?: string | null) {
+  if (!value) {
+    return false;
+  }
+
+  const followUpDate = new Date(value);
+  const today = new Date();
+
+  followUpDate.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0);
+
+  return followUpDate.getTime() < today.getTime();
+}
+
 function compareNullableString(
   left?: string | null,
   right?: string | null,
@@ -389,7 +403,9 @@ export function ApplicationsPage() {
                   <Table.Td>{application.priorityRating}</Table.Td>
                   <Table.Td>{application.source || "-"}</Table.Td>
                   <Table.Td>{formatDate(application.appliedAt)}</Table.Td>
-                  <Table.Td>{formatDate(application.followUpAt)}</Table.Td>
+                  <Table.Td c={isPastDate(application.followUpAt) ? "red.4" : undefined}>
+                    {formatDate(application.followUpAt)}
+                  </Table.Td>
                 </Table.Tr>
               ))}
             </Table.Tbody>
