@@ -282,7 +282,12 @@ export function ApplicationsPage() {
       return true;
     }
 
-    return [application.companyName, application.jobTitle, application.city]
+    return [
+      application.companyName,
+      application.jobTitle,
+      application.city,
+      application.address,
+    ]
       .filter(Boolean)
       .some(value => value!.toLowerCase().includes(normalizedSearchQuery));
   });
@@ -308,7 +313,7 @@ export function ApplicationsPage() {
       <Group justify="space-between" align="end">
         <TextInput
           label="Search"
-          placeholder="Company, position, city"
+          placeholder="Company, position, city, address"
           value={searchQuery}
           onChange={event => setSearchQuery(event.currentTarget.value)}
           flex={1}
