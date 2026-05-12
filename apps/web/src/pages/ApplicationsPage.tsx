@@ -10,41 +10,85 @@ import {
   Table,
   Text,
   Title,
+  UnstyledButton,
 } from "@mantine/core";
-import { IconPlus } from "@tabler/icons-react";
+import {
+  IconChevronDown,
+  IconChevronUp,
+  IconPlus,
+  IconSelector,
+} from "@tabler/icons-react";
 import { Link } from "react-router";
 
 import { getApplications } from "../api/applications";
-import { remoteTypeMeta } from "../lib/applicationMeta";
+import {
+  remoteTypeMeta,
+  statusMeta,
+  statusOptions,
+} from "../lib/applicationMeta";
 import { formatDate } from "../lib/format";
 import { StatusBadge } from "../components/StatusBadge";
-import type { ApplicationWithRelations } from "../types/application";
+import type { ApplicationStatus, ApplicationWithRelations } from "../types/application";
 
-const sortOptions = [
-  { value: "newest", label: "Newest first" },
-  { value: "oldest", label: "Oldest first" },
-  { value: "followUpSoonest", label: "Follow-up soonest" },
-  { value: "interestHigh", label: "Interest highest" },
-  { value: "skillFitHigh", label: "Skill fit highest" },
-  { value: "priorityHigh", label: "Priority highest" },
-  { value: "companyAsc", label: "Company A-Z" },
-  { value: "companyDesc", label: "Company Z-A" },
-] as const;
+type SortColumn =
+  | "companyName"
+  | "jobTitle"
+  | "location"
+  | "remoteType"
+  | "status"
+  | "priorityRating"
+  | "appliedAt"
+  | "source"
+  | "followUpAt";
 
-type SortOption = (typeof sortOptions)[number]["value"];
+type SortDirection = "asc" | "desc";
 
-function getTimestamp(value?: string | null) {
-  return value ? new Date(value).getTime() : null;
+type SortState = {
+  column: SortColumn;
+  direction: SortDirection;
+};
+
+const filterOptions = [
+  { value: "all", label: "All statuses" },
+  ...statusOptions,
+];
+
+const initialSort: SortState = {
+  column: "followUpAt",
+  direction: "asc",
+};
+
+function compareNullableString(
+  left?: string | null,
+  right?: string | null,
+  direction: SortDirection = "asc",
+) {
+  const leftValue = left?.trim();
+  const rightValue = right?.trim();
+
+  if (!leftValue && !rightValue) {
+    return 0;
+  }
+
+  if (!leftValue) {
+    return 1;
+  }
+
+  if (!rightValue) {
+    return -1;
+  }
+
+  const result = leftValue.localeCompare(rightValue);
+  return direction === "asc" ? result : -result;
 }
 
-function compareRating(
+function compareNullableNumber(
   left?: number | null,
   right?: number | null,
-  leftCreatedAt?: string,
-  rightCreatedAt?: string,
+  direction: SortDirection = "asc",
 ) {
   if (left == null && right == null) {
-    return new Date(rightCreatedAt ?? 0).getTime() - new Date(leftCreatedAt ?? 0).getTime();
+    return 0;
   }
 
   if (left == null) {
@@ -55,95 +99,155 @@ function compareRating(
     return -1;
   }
 
-  if (left === right) {
-    return new Date(rightCreatedAt ?? 0).getTime() - new Date(leftCreatedAt ?? 0).getTime();
+  return direction === "asc" ? left - right : right - left;
+}
+
+function compareNullableDate(
+  left?: string | null,
+  right?: string | null,
+  direction: SortDirection = "asc",
+) {
+  if (!left && !right) {
+    return 0;
   }
 
-  return right - left;
+  if (!left) {
+    return 1;
+  }
+
+  if (!right) {
+    return -1;
+  }
+
+  const result = new Date(left).getTime() - new Date(right).getTime();
+  return direction === "asc" ? result : -result;
 }
 
 function sortApplications(
   applications: ApplicationWithRelations[],
-  sortBy: SortOption,
+  sortState: SortState,
 ) {
   const sorted = [...applications];
 
   sorted.sort((left, right) => {
-    switch (sortBy) {
-      case "oldest":
-        return new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime();
-      case "followUpSoonest": {
-        const leftFollowUp = getTimestamp(left.followUpAt);
-        const rightFollowUp = getTimestamp(right.followUpAt);
-
-        if (leftFollowUp == null && rightFollowUp == null) {
-          return new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime();
-        }
-
-        if (leftFollowUp == null) {
-          return 1;
-        }
-
-        if (rightFollowUp == null) {
-          return -1;
-        }
-
-        return leftFollowUp - rightFollowUp;
-      }
-      case "companyAsc":
-        return left.companyName.localeCompare(right.companyName);
-      case "companyDesc":
-        return right.companyName.localeCompare(left.companyName);
-      case "interestHigh":
-        return compareRating(
-          left.interestRating,
-          right.interestRating,
-          left.createdAt,
-          right.createdAt,
+    switch (sortState.column) {
+      case "companyName":
+        return compareNullableString(
+          left.companyName,
+          right.companyName,
+          sortState.direction,
         );
-      case "skillFitHigh":
-        return compareRating(
-          left.skillFitRating,
-          right.skillFitRating,
-          left.createdAt,
-          right.createdAt,
+      case "jobTitle":
+        return compareNullableString(left.jobTitle, right.jobTitle, sortState.direction);
+      case "location":
+        return compareNullableString(left.location, right.location, sortState.direction);
+      case "remoteType":
+        return compareNullableString(
+          remoteTypeMeta[left.remoteType],
+          remoteTypeMeta[right.remoteType],
+          sortState.direction,
         );
-      case "priorityHigh":
-        return compareRating(
+      case "status":
+        return compareNullableString(
+          statusMeta[left.status].label,
+          statusMeta[right.status].label,
+          sortState.direction,
+        );
+      case "priorityRating":
+        return compareNullableNumber(
           left.priorityRating,
           right.priorityRating,
-          left.createdAt,
-          right.createdAt,
+          sortState.direction,
         );
-      case "newest":
+      case "appliedAt":
+        return compareNullableDate(left.appliedAt, right.appliedAt, sortState.direction);
+      case "source":
+        return compareNullableString(left.source, right.source, sortState.direction);
+      case "followUpAt":
+        return compareNullableDate(left.followUpAt, right.followUpAt, sortState.direction);
       default:
-        return new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime();
+        return 0;
     }
   });
 
   return sorted;
 }
 
+function SortableHeader({
+  label,
+  column,
+  sortState,
+  onSort,
+}: {
+  label: string;
+  column: SortColumn;
+  sortState: SortState;
+  onSort: (column: SortColumn) => void;
+}) {
+  const isActive = sortState.column === column;
+  const Icon = !isActive
+    ? IconSelector
+    : sortState.direction === "asc"
+      ? IconChevronUp
+      : IconChevronDown;
+
+  return (
+    <UnstyledButton onClick={() => onSort(column)}>
+      <Group gap={6} wrap="nowrap">
+        <Text size="sm" fw={600}>
+          {label}
+        </Text>
+        <Icon size={14} stroke={1.8} />
+      </Group>
+    </UnstyledButton>
+  );
+}
+
 export function ApplicationsPage() {
   const [applications, setApplications] = useState<ApplicationWithRelations[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<SortOption>("newest");
+  const [statusFilter, setStatusFilter] = useState<ApplicationStatus | "all">("all");
+  const [sortState, setSortState] = useState<SortState>(initialSort);
 
   useEffect(() => {
     getApplications()
       .then(setApplications)
-      .catch((error: unknown) => {
+      .catch((loadError: unknown) => {
         setError(
-          error instanceof Error
-            ? error.message
+          loadError instanceof Error
+            ? loadError.message
             : "Unknown error while loading applications.",
         );
       })
       .finally(() => setIsLoading(false));
   }, []);
 
-  const sortedApplications = sortApplications(applications, sortBy);
+  function handleSort(column: SortColumn) {
+    setSortState(current => {
+      if (current.column === column) {
+        return {
+          column,
+          direction: current.direction === "asc" ? "desc" : "asc",
+        };
+      }
+
+      return {
+        column,
+        direction: column === "priorityRating" ? "desc" : "asc",
+      };
+    });
+  }
+
+  const filteredApplications = applications.filter(application => {
+    if (statusFilter === "all") {
+      return true;
+    }
+
+    return application.status === statusFilter;
+  });
+
+  const sortedApplications = sortApplications(filteredApplications, sortState);
 
   return (
     <Stack gap="md">
@@ -163,11 +267,13 @@ export function ApplicationsPage() {
 
       <Group justify="flex-end">
         <Select
-          label="Sort by"
-          data={sortOptions}
-          value={sortBy}
-          onChange={value => setSortBy((value as SortOption | null) ?? "newest")}
-          w={220}
+          label="Filter by status"
+          data={filterOptions}
+          value={statusFilter}
+          onChange={value =>
+            setStatusFilter((value as ApplicationStatus | "all" | null) ?? "all")
+          }
+          w={240}
         />
       </Group>
 
@@ -183,20 +289,87 @@ export function ApplicationsPage() {
         <Card withBorder>
           <Text>No applications saved yet.</Text>
         </Card>
+      ) : filteredApplications.length === 0 ? (
+        <Card withBorder>
+          <Text>No applications match the current filter.</Text>
+        </Card>
       ) : (
         <Card withBorder radius="md" p={0}>
           <Table highlightOnHover striped>
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>Company</Table.Th>
-                <Table.Th>Position</Table.Th>
-                <Table.Th>Location</Table.Th>
-                <Table.Th>Remote type</Table.Th>
-                <Table.Th>Status</Table.Th>
-                <Table.Th>Priority</Table.Th>
-                <Table.Th>Applied</Table.Th>
-                <Table.Th>Source</Table.Th>
-                <Table.Th>Follow-up</Table.Th>
+                <Table.Th>
+                  <SortableHeader
+                    label="Company"
+                    column="companyName"
+                    sortState={sortState}
+                    onSort={handleSort}
+                  />
+                </Table.Th>
+                <Table.Th>
+                  <SortableHeader
+                    label="Position"
+                    column="jobTitle"
+                    sortState={sortState}
+                    onSort={handleSort}
+                  />
+                </Table.Th>
+                <Table.Th>
+                  <SortableHeader
+                    label="Location"
+                    column="location"
+                    sortState={sortState}
+                    onSort={handleSort}
+                  />
+                </Table.Th>
+                <Table.Th>
+                  <SortableHeader
+                    label="Remote type"
+                    column="remoteType"
+                    sortState={sortState}
+                    onSort={handleSort}
+                  />
+                </Table.Th>
+                <Table.Th>
+                  <SortableHeader
+                    label="Status"
+                    column="status"
+                    sortState={sortState}
+                    onSort={handleSort}
+                  />
+                </Table.Th>
+                <Table.Th>
+                  <SortableHeader
+                    label="Priority"
+                    column="priorityRating"
+                    sortState={sortState}
+                    onSort={handleSort}
+                  />
+                </Table.Th>
+                <Table.Th>
+                  <SortableHeader
+                    label="Applied"
+                    column="appliedAt"
+                    sortState={sortState}
+                    onSort={handleSort}
+                  />
+                </Table.Th>
+                <Table.Th>
+                  <SortableHeader
+                    label="Source"
+                    column="source"
+                    sortState={sortState}
+                    onSort={handleSort}
+                  />
+                </Table.Th>
+                <Table.Th>
+                  <SortableHeader
+                    label="Follow-up"
+                    column="followUpAt"
+                    sortState={sortState}
+                    onSort={handleSort}
+                  />
+                </Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
@@ -208,16 +381,14 @@ export function ApplicationsPage() {
                     </Anchor>
                   </Table.Td>
                   <Table.Td>{application.jobTitle}</Table.Td>
-                  <Table.Td>
-                    {application.location || "No location"}
-                  </Table.Td>
+                  <Table.Td>{application.location || "No location"}</Table.Td>
                   <Table.Td>{remoteTypeMeta[application.remoteType]}</Table.Td>
                   <Table.Td>
                     <StatusBadge status={application.status} />
                   </Table.Td>
                   <Table.Td>{application.priorityRating}</Table.Td>
                   <Table.Td>{formatDate(application.appliedAt)}</Table.Td>
-                  <Table.Td>{application.source || "—"}</Table.Td>
+                  <Table.Td>{application.source || "-"}</Table.Td>
                   <Table.Td>{formatDate(application.followUpAt)}</Table.Td>
                 </Table.Tr>
               ))}
