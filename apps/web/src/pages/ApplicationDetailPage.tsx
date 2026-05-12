@@ -440,7 +440,13 @@ export function ApplicationDetailPage() {
           {application.jobAdText ? (
             <>
               <Divider />
-              <Text>{application.jobAdText}</Text>
+              <Textarea
+                label="Job ad text"
+                value={application.jobAdText}
+                minRows={14}
+                autosize
+                readOnly
+              />
             </>
           ) : null}
         </Stack>
