@@ -28,7 +28,7 @@ const requiredRating = z.number().min(1).max(5, "Please enter a value between 1 
 export const applicationFormSchema = z.object({
   companyName: z.string().trim().min(1, "Company is required."),
   jobTitle: z.string().trim().min(1, "Job title is required."),
-  location: optionalTrimmedString,
+  city: optionalTrimmedString,
   remoteType: z.enum(remoteTypes),
   source: optionalTrimmedString,
   jobUrl: optionalUrlString,
@@ -65,7 +65,7 @@ export function buildApplicationFormValues(
   return {
     companyName: toOptionalString(application?.companyName),
     jobTitle: toOptionalString(application?.jobTitle),
-    location: toOptionalString(application?.location),
+    city: toOptionalString(application?.city),
     remoteType: application?.remoteType ?? "unknown",
     source: toOptionalString(application?.source),
     jobUrl: toOptionalString(application?.jobUrl),
@@ -90,7 +90,7 @@ export function toApplicationPayload(values: ApplicationFormValues) {
   return {
     companyName: values.companyName.trim(),
     jobTitle: values.jobTitle.trim(),
-    location: emptyStringToUndefined(values.location),
+    city: emptyStringToUndefined(values.city),
     remoteType: values.remoteType,
     source: emptyStringToUndefined(values.source),
     jobUrl: emptyStringToUndefined(values.jobUrl),

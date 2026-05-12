@@ -34,7 +34,7 @@ import type { ApplicationStatus, ApplicationWithRelations } from "../types/appli
 type SortColumn =
   | "companyName"
   | "jobTitle"
-  | "location"
+  | "city"
   | "remoteType"
   | "status"
   | "priorityRating"
@@ -163,8 +163,8 @@ function sortApplications(
         );
       case "jobTitle":
         return compareNullableString(left.jobTitle, right.jobTitle, sortState.direction);
-      case "location":
-        return compareNullableString(left.location, right.location, sortState.direction);
+      case "city":
+        return compareNullableString(left.city, right.city, sortState.direction);
       case "remoteType":
         return compareNullableString(
           remoteTypeMeta[left.remoteType],
@@ -282,7 +282,7 @@ export function ApplicationsPage() {
       return true;
     }
 
-    return [application.companyName, application.jobTitle, application.location]
+    return [application.companyName, application.jobTitle, application.city]
       .filter(Boolean)
       .some(value => value!.toLowerCase().includes(normalizedSearchQuery));
   });
@@ -364,7 +364,7 @@ export function ApplicationsPage() {
                   <Table.Th>
                   <SortableHeader
                       label="City"
-                      column="location"
+                      column="city"
                       sortState={sortState}
                       onSort={handleSort}
                     />
@@ -428,7 +428,7 @@ export function ApplicationsPage() {
                       </Anchor>
                     </Table.Td>
                     <Table.Td>{application.jobTitle}</Table.Td>
-                    <Table.Td>{application.location || "No city"}</Table.Td>
+                    <Table.Td>{application.city || "No city"}</Table.Td>
                     <Table.Td>{remoteTypeMeta[application.remoteType]}</Table.Td>
                     <Table.Td>
                       <StatusBadge status={application.status} />

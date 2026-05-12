@@ -23,7 +23,7 @@ export type Application = {
   updatedAt: string;
   companyName: string;
   jobTitle: string;
-  location?: string | null;
+  city?: string | null;
   remoteType: RemoteType;
   source?: string | null;
   jobUrl?: string | null;
