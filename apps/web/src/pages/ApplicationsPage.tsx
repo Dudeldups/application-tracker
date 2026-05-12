@@ -25,7 +25,6 @@ import { getApplications } from "../api/applications";
 import {
   remoteTypeMeta,
   statusMeta,
-  statusOptions,
 } from "../lib/applicationMeta";
 import { formatDate } from "../lib/format";
 import { StatusBadge } from "../components/StatusBadge";
@@ -50,8 +49,17 @@ type SortState = {
 };
 
 const filterOptions = [
-  { value: "all", label: "All statuses" },
-  ...statusOptions,
+  { value: "all", label: "All applications" },
+  { value: "open", label: "Open applications" },
+  { value: "finished", label: "Finished applications" },
+] as const;
+
+type FilterOption = (typeof filterOptions)[number]["value"];
+
+const finishedStatuses: ApplicationStatus[] = [
+  "withdrawn",
+  "no_response",
+  "rejected",
 ];
 
 const initialSort: SortState = {
@@ -222,7 +230,7 @@ export function ApplicationsPage() {
   const [applications, setApplications] = useState<ApplicationWithRelations[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<ApplicationStatus | "all">("all");
+  const [statusFilter, setStatusFilter] = useState<FilterOption>("open");
   const [sortState, setSortState] = useState<SortState>(initialSort);
 
   useEffect(() => {
@@ -259,7 +267,11 @@ export function ApplicationsPage() {
       return true;
     }
 
-    return application.status === statusFilter;
+    if (statusFilter === "finished") {
+      return finishedStatuses.includes(application.status);
+    }
+
+    return !finishedStatuses.includes(application.status);
   });
 
   const sortedApplications = sortApplications(filteredApplications, sortState);
@@ -282,12 +294,10 @@ export function ApplicationsPage() {
 
       <Group justify="flex-end">
         <Select
-          label="Filter by status"
+          label="Filter"
           data={filterOptions}
           value={statusFilter}
-          onChange={value =>
-            setStatusFilter((value as ApplicationStatus | "all" | null) ?? "all")
-          }
+          onChange={value => setStatusFilter((value as FilterOption | null) ?? "open")}
           w={240}
         />
       </Group>
