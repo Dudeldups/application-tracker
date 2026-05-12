@@ -4,7 +4,7 @@ FROM node:22-alpine AS web-builder
 WORKDIR /app/apps/web
 
 COPY apps/web/package*.json ./
-RUN npm ci
+RUN npm ci --no-audit --no-fund
 
 COPY apps/web ./
 
@@ -19,7 +19,7 @@ FROM node:22-alpine AS api-builder
 WORKDIR /app/apps/api
 
 COPY apps/api/package*.json ./
-RUN npm ci
+RUN npm ci --no-audit --no-fund
 
 COPY apps/api ./
 RUN npm run build
@@ -35,7 +35,7 @@ ENV PORT=3000
 ENV STATIC_DIR=/app/public
 
 COPY apps/api/package*.json ./
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev --no-audit --no-fund
 
 COPY --from=api-builder /app/apps/api/dist ./dist
 COPY --from=api-builder /app/apps/api/prisma ./prisma
