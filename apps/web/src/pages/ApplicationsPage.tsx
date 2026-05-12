@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import {
-  Badge,
+  Anchor,
   Button,
   Card,
   Group,
   Loader,
   Select,
   Stack,
+  Table,
   Text,
   Title,
 } from "@mantine/core";
@@ -183,42 +184,46 @@ export function ApplicationsPage() {
           <Text>No applications saved yet.</Text>
         </Card>
       ) : (
-        <Stack>
-          {sortedApplications.map(application => (
-            <Card
-              key={application.id}
-              withBorder
-              radius="md"
-              component={Link}
-              to={`/applications/${application.id}`}
-              className="no-underline">
-              <Group justify="space-between" align="start">
-                <div>
-                  <Title order={3}>{application.companyName}</Title>
-                  <Text>{application.jobTitle}</Text>
-                  <Group gap="xs" mt="xs">
-                    <Badge variant="outline">
-                      {remoteTypeMeta[application.remoteType]}
-                    </Badge>
-                    {application.followUpAt ? (
-                      <Badge color="orange" variant="light">
-                        Follow-up {formatDate(application.followUpAt)}
-                      </Badge>
-                    ) : null}
-                  </Group>
-
-                  {application.source ? (
-                    <Text size="sm" c="dimmed">
-                      Source: {application.source}
-                    </Text>
-                  ) : null}
-                </div>
-
-                <StatusBadge status={application.status} />
-              </Group>
-            </Card>
-          ))}
-        </Stack>
+        <Card withBorder radius="md" p={0}>
+          <Table highlightOnHover striped>
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>Company</Table.Th>
+                <Table.Th>Position</Table.Th>
+                <Table.Th>Location</Table.Th>
+                <Table.Th>Remote type</Table.Th>
+                <Table.Th>Status</Table.Th>
+                <Table.Th>Priority</Table.Th>
+                <Table.Th>Applied</Table.Th>
+                <Table.Th>Source</Table.Th>
+                <Table.Th>Follow-up</Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {sortedApplications.map(application => (
+                <Table.Tr key={application.id}>
+                  <Table.Td>
+                    <Anchor component={Link} to={`/applications/${application.id}`}>
+                      {application.companyName}
+                    </Anchor>
+                  </Table.Td>
+                  <Table.Td>{application.jobTitle}</Table.Td>
+                  <Table.Td>
+                    {application.location || "No location"}
+                  </Table.Td>
+                  <Table.Td>{remoteTypeMeta[application.remoteType]}</Table.Td>
+                  <Table.Td>
+                    <StatusBadge status={application.status} />
+                  </Table.Td>
+                  <Table.Td>{application.priorityRating}</Table.Td>
+                  <Table.Td>{formatDate(application.appliedAt)}</Table.Td>
+                  <Table.Td>{application.source || "—"}</Table.Td>
+                  <Table.Td>{formatDate(application.followUpAt)}</Table.Td>
+                </Table.Tr>
+              ))}
+            </Table.Tbody>
+          </Table>
+        </Card>
       )}
     </Stack>
   );
