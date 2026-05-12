@@ -1,14 +1,20 @@
-import { AppShell, Container, Group, NavLink, Title } from "@mantine/core";
+import { AppShell, Burger, Container, Group, NavLink, Title } from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
 import { IconBriefcase, IconPlus } from "@tabler/icons-react";
 import { Link, Outlet, useLocation } from "react-router";
 
 export function AppLayout() {
   const location = useLocation();
+  const [opened, { toggle, close }] = useDisclosure(false);
 
   return (
     <AppShell
       header={{ height: 64 }}
-      navbar={{ width: 260, breakpoint: "sm" }}
+      navbar={{
+        width: 260,
+        breakpoint: "sm",
+        collapsed: { mobile: !opened },
+      }}
       padding="md"
       styles={{
         main: {
@@ -24,8 +30,17 @@ export function AppLayout() {
         },
       }}>
       <AppShell.Header>
-        <Container size="xl" className="flex h-full items-center">
-          <Title order={3}>Application Tracker</Title>
+        <Container size="xl" className="flex h-full items-center justify-between">
+          <Group gap="sm">
+            <Burger
+              opened={opened}
+              onClick={toggle}
+              hiddenFrom="sm"
+              size="sm"
+              aria-label="Toggle navigation"
+            />
+            <Title order={3}>Application Tracker</Title>
+          </Group>
         </Container>
       </AppShell.Header>
 
@@ -37,6 +52,7 @@ export function AppLayout() {
             label="Applications"
             leftSection={<IconBriefcase size={18} />}
             active={location.pathname === "/applications"}
+            onClick={close}
           />
           <NavLink
             component={Link}
@@ -44,6 +60,7 @@ export function AppLayout() {
             label="New application"
             leftSection={<IconPlus size={18} />}
             active={location.pathname === "/applications/new"}
+            onClick={close}
           />
         </Group>
       </AppShell.Navbar>
