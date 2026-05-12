@@ -8,6 +8,7 @@ import {
   Select,
   Stack,
   Table,
+  TableScrollContainer,
   Text,
   Title,
   UnstyledButton,
@@ -309,107 +310,109 @@ export function ApplicationsPage() {
         </Card>
       ) : (
         <Card withBorder radius="md" p={0}>
-          <Table highlightOnHover striped>
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>
-                  <SortableHeader
-                    label="Company"
-                    column="companyName"
-                    sortState={sortState}
-                    onSort={handleSort}
-                  />
-                </Table.Th>
-                <Table.Th>
-                  <SortableHeader
-                    label="Position"
-                    column="jobTitle"
-                    sortState={sortState}
-                    onSort={handleSort}
-                  />
-                </Table.Th>
-                <Table.Th>
-                  <SortableHeader
-                    label="Location"
-                    column="location"
-                    sortState={sortState}
-                    onSort={handleSort}
-                  />
-                </Table.Th>
-                <Table.Th>
-                  <SortableHeader
-                    label="Remote type"
-                    column="remoteType"
-                    sortState={sortState}
-                    onSort={handleSort}
-                  />
-                </Table.Th>
-                <Table.Th>
-                  <SortableHeader
-                    label="Status"
-                    column="status"
-                    sortState={sortState}
-                    onSort={handleSort}
-                  />
-                </Table.Th>
-                <Table.Th>
-                  <SortableHeader
-                    label="Priority"
-                    column="priorityRating"
-                    sortState={sortState}
-                    onSort={handleSort}
-                  />
-                </Table.Th>
-                <Table.Th>
-                  <SortableHeader
-                    label="Source"
-                    column="source"
-                    sortState={sortState}
-                    onSort={handleSort}
-                  />
-                </Table.Th>
-                <Table.Th>
-                  <SortableHeader
-                    label="Applied"
-                    column="appliedAt"
-                    sortState={sortState}
-                    onSort={handleSort}
-                  />
-                </Table.Th>
-                <Table.Th>
-                  <SortableHeader
-                    label="Follow-up"
-                    column="followUpAt"
-                    sortState={sortState}
-                    onSort={handleSort}
-                  />
-                </Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {sortedApplications.map(application => (
-                <Table.Tr key={application.id}>
-                  <Table.Td>
-                    <Anchor component={Link} to={`/applications/${application.id}`}>
-                      {application.companyName}
-                    </Anchor>
-                  </Table.Td>
-                  <Table.Td>{application.jobTitle}</Table.Td>
-                  <Table.Td>{application.location || "No location"}</Table.Td>
-                  <Table.Td>{remoteTypeMeta[application.remoteType]}</Table.Td>
-                  <Table.Td>
-                    <StatusBadge status={application.status} />
-                  </Table.Td>
-                  <Table.Td>{application.priorityRating}</Table.Td>
-                  <Table.Td>{application.source || "-"}</Table.Td>
-                  <Table.Td>{formatDate(application.appliedAt)}</Table.Td>
-                  <Table.Td c={isPastDate(application.followUpAt) ? "red.4" : undefined}>
-                    {formatDate(application.followUpAt)}
-                  </Table.Td>
+          <TableScrollContainer minWidth={980}>
+            <Table highlightOnHover striped>
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>
+                    <SortableHeader
+                      label="Company"
+                      column="companyName"
+                      sortState={sortState}
+                      onSort={handleSort}
+                    />
+                  </Table.Th>
+                  <Table.Th>
+                    <SortableHeader
+                      label="Position"
+                      column="jobTitle"
+                      sortState={sortState}
+                      onSort={handleSort}
+                    />
+                  </Table.Th>
+                  <Table.Th>
+                    <SortableHeader
+                      label="Location"
+                      column="location"
+                      sortState={sortState}
+                      onSort={handleSort}
+                    />
+                  </Table.Th>
+                  <Table.Th>
+                    <SortableHeader
+                      label="Remote type"
+                      column="remoteType"
+                      sortState={sortState}
+                      onSort={handleSort}
+                    />
+                  </Table.Th>
+                  <Table.Th>
+                    <SortableHeader
+                      label="Status"
+                      column="status"
+                      sortState={sortState}
+                      onSort={handleSort}
+                    />
+                  </Table.Th>
+                  <Table.Th>
+                    <SortableHeader
+                      label="Priority"
+                      column="priorityRating"
+                      sortState={sortState}
+                      onSort={handleSort}
+                    />
+                  </Table.Th>
+                  <Table.Th>
+                    <SortableHeader
+                      label="Source"
+                      column="source"
+                      sortState={sortState}
+                      onSort={handleSort}
+                    />
+                  </Table.Th>
+                  <Table.Th>
+                    <SortableHeader
+                      label="Applied"
+                      column="appliedAt"
+                      sortState={sortState}
+                      onSort={handleSort}
+                    />
+                  </Table.Th>
+                  <Table.Th>
+                    <SortableHeader
+                      label="Follow-up"
+                      column="followUpAt"
+                      sortState={sortState}
+                      onSort={handleSort}
+                    />
+                  </Table.Th>
                 </Table.Tr>
-              ))}
-            </Table.Tbody>
-          </Table>
+              </Table.Thead>
+              <Table.Tbody>
+                {sortedApplications.map(application => (
+                  <Table.Tr key={application.id}>
+                    <Table.Td>
+                      <Anchor component={Link} to={`/applications/${application.id}`}>
+                        {application.companyName}
+                      </Anchor>
+                    </Table.Td>
+                    <Table.Td>{application.jobTitle}</Table.Td>
+                    <Table.Td>{application.location || "No location"}</Table.Td>
+                    <Table.Td>{remoteTypeMeta[application.remoteType]}</Table.Td>
+                    <Table.Td>
+                      <StatusBadge status={application.status} />
+                    </Table.Td>
+                    <Table.Td>{application.priorityRating}</Table.Td>
+                    <Table.Td>{application.source || "-"}</Table.Td>
+                    <Table.Td>{formatDate(application.appliedAt)}</Table.Td>
+                    <Table.Td c={isPastDate(application.followUpAt) ? "red.4" : undefined}>
+                      {formatDate(application.followUpAt)}
+                    </Table.Td>
+                  </Table.Tr>
+                ))}
+              </Table.Tbody>
+            </Table>
+          </TableScrollContainer>
         </Card>
       )}
     </Stack>
