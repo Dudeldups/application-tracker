@@ -8,7 +8,6 @@ import {
   Grid,
   Group,
   Loader,
-  Modal,
   Select,
   SimpleGrid,
   Stack,
@@ -36,6 +35,7 @@ import {
   getApplication,
   updateApplicationStatus,
 } from "../api/applications";
+import { ConfirmationModal } from "../components/ConfirmationModal";
 import { StatusBadge } from "../components/StatusBadge";
 import { statusOptions } from "../lib/applicationMeta";
 import { formatDate } from "../lib/format";
@@ -374,11 +374,12 @@ export function ApplicationDetailPage() {
 
   return (
     <Stack gap="md">
-      <Modal
+      <ConfirmationModal
         opened={isDeleteModalOpen}
         onClose={closeDeleteModal}
+        onConfirm={handleDelete}
         title="Delete application"
-        centered>
+        loading={isDeleting}>
         <Stack>
           <Text>
             Delete the application for{" "}
@@ -394,24 +395,17 @@ export function ApplicationDetailPage() {
           <Text c="dimmed" size="sm">
             This action cannot be undone.
           </Text>
-          <Group justify="flex-end">
-            <Button variant="default" onClick={closeDeleteModal} disabled={isDeleting}>
-              Cancel
-            </Button>
-            <Button color="red" onClick={handleDelete} loading={isDeleting}>
-              Delete
-            </Button>
-          </Group>
         </Stack>
-      </Modal>
-      <Modal
+      </ConfirmationModal>
+      <ConfirmationModal
         opened={isStatusDeleteModalOpen}
         onClose={() => {
           closeStatusDeleteModal();
           setStatusEntryToDelete(null);
         }}
+        onConfirm={handleDeleteStatusEntry}
         title="Delete status change"
-        centered>
+        loading={isDeletingStatusEntry}>
         <Stack>
           <Text>
             Delete this status change
@@ -429,30 +423,17 @@ export function ApplicationDetailPage() {
           <Text c="dimmed" size="sm">
             The application status will fall back to the latest remaining entry if needed.
           </Text>
-          <Group justify="flex-end">
-            <Button
-              variant="default"
-              onClick={() => {
-                closeStatusDeleteModal();
-                setStatusEntryToDelete(null);
-              }}
-              disabled={isDeletingStatusEntry}>
-              Cancel
-            </Button>
-            <Button color="red" onClick={handleDeleteStatusEntry} loading={isDeletingStatusEntry}>
-              Delete
-            </Button>
-          </Group>
         </Stack>
-      </Modal>
-      <Modal
+      </ConfirmationModal>
+      <ConfirmationModal
         opened={isContactDeleteModalOpen}
         onClose={() => {
           closeContactDeleteModal();
           setContactToDelete(null);
         }}
+        onConfirm={handleDeleteContact}
         title="Delete contact"
-        centered>
+        loading={isDeletingContact}>
         <Stack>
           <Text>
             Delete this contact
@@ -469,30 +450,17 @@ export function ApplicationDetailPage() {
           <Text c="dimmed" size="sm">
             This action cannot be undone.
           </Text>
-          <Group justify="flex-end">
-            <Button
-              variant="default"
-              onClick={() => {
-                closeContactDeleteModal();
-                setContactToDelete(null);
-              }}
-              disabled={isDeletingContact}>
-              Cancel
-            </Button>
-            <Button color="red" onClick={handleDeleteContact} loading={isDeletingContact}>
-              Delete
-            </Button>
-          </Group>
         </Stack>
-      </Modal>
-      <Modal
+      </ConfirmationModal>
+      <ConfirmationModal
         opened={isCommunicationDeleteModalOpen}
         onClose={() => {
           closeCommunicationDeleteModal();
           setCommunicationToDelete(null);
         }}
+        onConfirm={handleDeleteCommunication}
         title="Delete communication"
-        centered>
+        loading={isDeletingCommunication}>
         <Stack>
           <Text>
             Delete this communication entry
@@ -509,25 +477,8 @@ export function ApplicationDetailPage() {
           <Text c="dimmed" size="sm">
             This action cannot be undone.
           </Text>
-          <Group justify="flex-end">
-            <Button
-              variant="default"
-              onClick={() => {
-                closeCommunicationDeleteModal();
-                setCommunicationToDelete(null);
-              }}
-              disabled={isDeletingCommunication}>
-              Cancel
-            </Button>
-            <Button
-              color="red"
-              onClick={handleDeleteCommunication}
-              loading={isDeletingCommunication}>
-              Delete
-            </Button>
-          </Group>
         </Stack>
-      </Modal>
+      </ConfirmationModal>
 
       <Group justify="space-between" align="start">
         <div>
