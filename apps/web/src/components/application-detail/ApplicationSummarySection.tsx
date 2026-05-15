@@ -1,6 +1,6 @@
 import { Anchor, Card, Divider, SimpleGrid, Stack, Text, Textarea, Title } from "@mantine/core";
 
-import { formatDate } from "../../lib/format";
+import { formatCalendarDate } from "../../lib/format";
 import type { ApplicationWithRelations } from "../../types/application";
 
 type ApplicationSummarySectionProps = {
@@ -19,10 +19,10 @@ export function ApplicationSummarySection({
             <Text>City: {application.city || "Not set"}</Text>
             <Text>Address: {application.address || "Not set"}</Text>
             <Text>Source: {application.source || "Not set"}</Text>
-            <Text>Found: {formatDate(application.foundAt)}</Text>
-            <Text>Applied: {formatDate(application.appliedAt)}</Text>
-            <Text>Last contact: {formatDate(application.lastContactAt)}</Text>
-            <Text>Follow-up: {formatDate(application.followUpAt)}</Text>
+            <Text>Found: {formatCalendarDate(application.foundAt)}</Text>
+            <Text>Applied: {formatCalendarDate(application.appliedAt)}</Text>
+            <Text>Last contact: {formatCalendarDate(application.lastContactAt)}</Text>
+            <Text>Follow-up: {formatCalendarDate(application.followUpAt)}</Text>
             {application.jobUrl ? (
               <Anchor href={application.jobUrl} target="_blank">
                 Job posting

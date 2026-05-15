@@ -15,7 +15,13 @@ import { Link } from "react-router";
 
 import { getApplicationsWithDetails } from "../api/applications";
 import { statusMeta } from "../lib/applicationMeta";
-import { formatDate } from "../lib/format";
+import {
+  compareCalendarDates,
+  formatCalendarDate,
+  getCalendarDayDifference,
+  isCalendarDateInCurrentMonth,
+  isPastCalendarDate,
+} from "../lib/format";
 import { usePageTitle } from "../lib/usePageTitle";
 import type { ApplicationStatus, ApplicationWithRelations } from "../types/application";
 
@@ -45,34 +51,6 @@ const interviewStatuses = new Set<ApplicationStatus>([
   "technical_task",
   "offer",
 ]);
-
-function isPastDate(value?: string | null) {
-  if (!value) {
-    return false;
-  }
-
-  const date = new Date(value);
-  const today = new Date();
-
-  date.setHours(0, 0, 0, 0);
-  today.setHours(0, 0, 0, 0);
-
-  return date.getTime() < today.getTime();
-}
-
-function isInCurrentMonth(value?: string | null) {
-  if (!value) {
-    return false;
-  }
-
-  const date = new Date(value);
-  const now = new Date();
-
-  return (
-    date.getFullYear() === now.getFullYear() &&
-    date.getMonth() === now.getMonth()
-  );
-}
 
 function hasResponse(application: ApplicationWithRelations) {
   return (
@@ -107,11 +85,6 @@ function getFirstResponseDate(application: ApplicationWithRelations) {
   return responseDates[0] ?? null;
 }
 
-function getDayDifference(start: Date, end: Date) {
-  const millisecondsPerDay = 1000 * 60 * 60 * 24;
-  return (end.getTime() - start.getTime()) / millisecondsPerDay;
-}
-
 export function DashboardPage() {
   usePageTitle("Dashboard");
 
@@ -137,7 +110,7 @@ export function DashboardPage() {
     application => !finishedStatuses.includes(application.status),
   );
   const overdueFollowUps = openApplications.filter(application =>
-    isPastDate(application.followUpAt),
+    isPastCalendarDate(application.followUpAt),
   );
   const activePipeline = applications.filter(application =>
     pipelineStatuses.has(application.status),
@@ -145,7 +118,7 @@ export function DashboardPage() {
   const responses = applications.filter(hasResponse);
   const interviewApplications = applications.filter(hasReachedInterview);
   const appliedThisMonth = applications.filter(application =>
-    isInCurrentMonth(application.appliedAt),
+    isCalendarDateInCurrentMonth(application.appliedAt),
   );
   const responseTimesInDays = applications
     .map(application => {
@@ -153,14 +126,21 @@ export function DashboardPage() {
         return null;
       }
 
-      const appliedAt = new Date(application.appliedAt);
       const firstResponseDate = getFirstResponseDate(application);
 
-      if (!firstResponseDate || Number.isNaN(appliedAt.getTime())) {
+      if (!firstResponseDate) {
         return null;
       }
 
-      const difference = getDayDifference(appliedAt, firstResponseDate);
+      const difference = getCalendarDayDifference(
+        application.appliedAt,
+        firstResponseDate,
+      );
+
+      if (difference == null) {
+        return null;
+      }
+
       return difference >= 0 ? difference : null;
     })
     .filter((value): value is number => value != null);
@@ -189,7 +169,7 @@ export function DashboardPage() {
   const followUps = [...openApplications]
     .filter(application => application.followUpAt)
     .sort((left, right) =>
-      new Date(left.followUpAt ?? "").getTime() - new Date(right.followUpAt ?? "").getTime(),
+      compareCalendarDates(left.followUpAt, right.followUpAt, "asc"),
     )
     .slice(0, 6);
 
@@ -376,8 +356,13 @@ export function DashboardPage() {
                         </Table.Td>
                         <Table.Td>{application.jobTitle}</Table.Td>
                         <Table.Td>{statusMeta[application.status].label}</Table.Td>
-                        <Table.Td c={isPastDate(application.followUpAt) ? "red.4" : undefined}>
-                          {formatDate(application.followUpAt)}
+                        <Table.Td
+                          c={
+                            isPastCalendarDate(application.followUpAt)
+                              ? "red.4"
+                              : undefined
+                          }>
+                          {formatCalendarDate(application.followUpAt)}
                         </Table.Td>
                       </Table.Tr>
                     ))}

@@ -1,7 +1,11 @@
 import { Badge, Card, Group, Stack, Text, Title } from "@mantine/core";
 
 import { statusMeta } from "../../lib/applicationMeta";
-import { formatDate, formatDateTime } from "../../lib/format";
+import {
+  formatCalendarDate,
+  formatDateTime,
+  getCalendarDateTimestamp,
+} from "../../lib/format";
 import type { ApplicationWithRelations } from "../../types/application";
 
 type TimelineItem = {
@@ -22,17 +26,18 @@ function getSortTimestamp(
 ) {
   const parsedDate = new Date(value);
 
-  if (Number.isNaN(parsedDate.getTime())) {
-    return Number.MAX_SAFE_INTEGER;
-  }
-
   if (hasExplicitTime) {
+    if (Number.isNaN(parsedDate.getTime())) {
+      return Number.MAX_SAFE_INTEGER;
+    }
+
     return parsedDate.getTime();
   }
 
   const syntheticHour = Math.min(sortPriority, 23);
-  parsedDate.setHours(syntheticHour, 0, 0, 0);
-  return parsedDate.getTime();
+  return (
+    getCalendarDateTimestamp(value, syntheticHour) ?? Number.MAX_SAFE_INTEGER
+  );
 }
 
 function hasMeaningfulStoredTime(value: string) {
@@ -52,7 +57,7 @@ function hasMeaningfulStoredTime(value: string) {
 
 function formatTimelineDate(value: string, hasExplicitTime: boolean) {
   if (!hasExplicitTime) {
-    return formatDate(value);
+    return formatCalendarDate(value);
   }
 
   return formatDateTime(value);

@@ -28,7 +28,11 @@ import {
   remoteTypeMeta,
   statusMeta,
 } from "../lib/applicationMeta";
-import { formatDate } from "../lib/format";
+import {
+  compareCalendarDates,
+  formatCalendarDate,
+  isPastCalendarDate,
+} from "../lib/format";
 import { usePageTitle } from "../lib/usePageTitle";
 import { StatusBadge } from "../components/StatusBadge";
 import type { Application, ApplicationStatus } from "../types/application";
@@ -69,20 +73,6 @@ const initialSort: SortState = {
   column: "followUpAt",
   direction: "asc",
 };
-
-function isPastDate(value?: string | null) {
-  if (!value) {
-    return false;
-  }
-
-  const followUpDate = new Date(value);
-  const today = new Date();
-
-  followUpDate.setHours(0, 0, 0, 0);
-  today.setHours(0, 0, 0, 0);
-
-  return followUpDate.getTime() < today.getTime();
-}
 
 function compareNullableString(
   left?: string | null,
@@ -128,27 +118,6 @@ function compareNullableNumber(
   return direction === "asc" ? left - right : right - left;
 }
 
-function compareNullableDate(
-  left?: string | null,
-  right?: string | null,
-  direction: SortDirection = "asc",
-) {
-  if (!left && !right) {
-    return 0;
-  }
-
-  if (!left) {
-    return 1;
-  }
-
-  if (!right) {
-    return -1;
-  }
-
-  const result = new Date(left).getTime() - new Date(right).getTime();
-  return direction === "asc" ? result : -result;
-}
-
 function sortApplications(applications: Application[], sortState: SortState) {
   const sorted = [...applications];
 
@@ -183,11 +152,19 @@ function sortApplications(applications: Application[], sortState: SortState) {
           sortState.direction,
         );
       case "appliedAt":
-        return compareNullableDate(left.appliedAt, right.appliedAt, sortState.direction);
+        return compareCalendarDates(
+          left.appliedAt,
+          right.appliedAt,
+          sortState.direction,
+        );
       case "source":
         return compareNullableString(left.source, right.source, sortState.direction);
       case "followUpAt":
-        return compareNullableDate(left.followUpAt, right.followUpAt, sortState.direction);
+        return compareCalendarDates(
+          left.followUpAt,
+          right.followUpAt,
+          sortState.direction,
+        );
       default:
         return 0;
     }
@@ -300,7 +277,7 @@ export function ApplicationsPage() {
     application => !finishedStatuses.includes(application.status),
   ).length;
   const overdueFollowUpsCount = filteredApplications.filter(application =>
-    isPastDate(application.followUpAt),
+    isPastCalendarDate(application.followUpAt),
   ).length;
 
   return (
@@ -478,9 +455,14 @@ export function ApplicationsPage() {
                     </Table.Td>
                     <Table.Td>{application.priorityRating}</Table.Td>
                     <Table.Td>{application.source || "-"}</Table.Td>
-                    <Table.Td>{formatDate(application.appliedAt)}</Table.Td>
-                    <Table.Td c={isPastDate(application.followUpAt) ? "red.4" : undefined}>
-                      {formatDate(application.followUpAt)}
+                    <Table.Td>{formatCalendarDate(application.appliedAt)}</Table.Td>
+                    <Table.Td
+                      c={
+                        isPastCalendarDate(application.followUpAt)
+                          ? "red.4"
+                          : undefined
+                      }>
+                      {formatCalendarDate(application.followUpAt)}
                     </Table.Td>
                   </Table.Tr>
                 ))}
