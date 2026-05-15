@@ -61,8 +61,12 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-export function getApplications(): Promise<ApplicationWithRelations[]> {
-  return request<ApplicationWithRelations[]>("/api/applications");
+export function getApplicationsList(): Promise<Application[]> {
+  return request<Application[]>("/api/applications");
+}
+
+export function getApplicationsWithDetails(): Promise<ApplicationWithRelations[]> {
+  return request<ApplicationWithRelations[]>("/api/applications?include=details");
 }
 
 export function getApplication(id: string): Promise<ApplicationWithRelations> {
