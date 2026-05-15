@@ -1,4 +1,4 @@
-import express from "express";
+import express, { type ErrorRequestHandler } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { PrismaClient } from "./generated/prisma/client.js";
@@ -6,6 +6,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { createApplicationsRouter } from "./routes/applications.js";
 import { createHealthRouter } from "./routes/health.js";
 import path from "node:path";
+import { HttpError } from "./lib/errors.js";
 
 dotenv.config();
 
@@ -32,6 +33,21 @@ if (staticDir) {
     res.sendFile(path.join(staticDir, "index.html"));
   });
 }
+
+const errorHandler: ErrorRequestHandler = (error, _req, res, _next) => {
+  if (error instanceof HttpError) {
+    res.status(error.statusCode).json({
+      error: error.message,
+      ...(error.details !== undefined ? { details: error.details } : {}),
+    });
+    return;
+  }
+
+  console.error(error);
+  res.status(500).json({ error: "Internal server error" });
+};
+
+app.use(errorHandler);
 
 const port = Number(process.env.PORT ?? 3001);
 
