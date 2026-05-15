@@ -90,3 +90,5 @@ export const createContactSchema = z.object({
   email: z.string().trim().email().optional().or(z.literal("")),
   phone: z.string().trim().optional(),
 });
+
+export type ContactInput = z.infer<typeof createContactSchema>;

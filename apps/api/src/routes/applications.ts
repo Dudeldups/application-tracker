@@ -7,7 +7,7 @@ import {
   updateApplicationSchema,
   updateStatusSchema,
 } from "../schemas/applicationSchemas.js";
-import { emptyStringToUndefined, omitUndefined } from "../lib/object.js";
+import { omitUndefined } from "../lib/object.js";
 import { NotFoundError, mapPrismaError } from "../lib/errors.js";
 import {
   applicationDetailInclude,
@@ -15,6 +15,8 @@ import {
 } from "../lib/application-data.js";
 import { parseBody } from "../lib/validation.js";
 import {
+  createApplicationContact,
+  deleteApplicationContact,
   deleteStatusHistoryEntry,
   getApplicationOrThrow,
   updateApplicationStatus,
@@ -139,16 +141,7 @@ export function createApplicationsRouter(prisma: PrismaClient) {
     const data = parseBody(createContactSchema, req.body);
 
     try {
-      const contact = await prisma.contact.create({
-        data: omitUndefined({
-          applicationId: req.params.id,
-          name: emptyStringToUndefined(data.name),
-          role: emptyStringToUndefined(data.role),
-          email: emptyStringToUndefined(data.email),
-          phone: emptyStringToUndefined(data.phone),
-        }),
-      });
-
+      const contact = await createApplicationContact(prisma, req.params.id, data);
       res.status(201).json(contact);
     } catch (error) {
       throw mapPrismaError(error, { P2003: "Application not found" });
@@ -177,23 +170,7 @@ export function createApplicationsRouter(prisma: PrismaClient) {
   });
 
   router.delete("/:id/contacts/:contactId", async (req, res) => {
-    const { id, contactId } = req.params;
-
-    const contact = await prisma.contact.findFirst({
-      where: {
-        id: contactId,
-        applicationId: id,
-      },
-    });
-
-    if (!contact) {
-      throw new NotFoundError("Contact not found");
-    }
-
-    await prisma.contact.delete({
-      where: { id: contactId },
-    });
-
+    await deleteApplicationContact(prisma, req.params.id, req.params.contactId);
     res.status(204).send();
   });
 
