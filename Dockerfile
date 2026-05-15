@@ -1,6 +1,8 @@
 # ---------- Build frontend ----------
 FROM node:22-alpine AS web-builder
 
+ARG APP_VERSION=local
+
 WORKDIR /app/apps/web
 
 COPY apps/web/package*.json ./
@@ -10,11 +12,13 @@ COPY apps/web ./
 
 # Empty API URL means the built frontend calls /api/... on the same host.
 ENV VITE_API_URL=
-RUN npm run build
+RUN echo "Building web version: $APP_VERSION" && npm run build
 
 
 # ---------- Build API ----------
 FROM node:22-alpine AS api-builder
+
+ARG APP_VERSION=local
 
 WORKDIR /app/apps/api
 
@@ -22,7 +26,7 @@ COPY apps/api/package*.json ./
 RUN npm ci --no-audit --no-fund
 
 COPY apps/api ./
-RUN npm run build
+RUN echo "Building api version: $APP_VERSION" && npm run build
 
 
 # ---------- Production runtime ----------
