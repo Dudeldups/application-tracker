@@ -9,12 +9,17 @@ import {
   toApplicationPayload,
   type ApplicationFormValues,
 } from "../components/applicationFormSchema";
+import { usePageTitle } from "../lib/usePageTitle";
 import type { ApplicationWithRelations } from "../types/application";
 
 export function EditApplicationPage() {
   const { id = "" } = useParams();
-  const navigate = useNavigate();
   const [application, setApplication] = useState<ApplicationWithRelations | null>(null);
+  usePageTitle(
+    application ? `Edit ${application.companyName}` : "Edit Application",
+  );
+
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);

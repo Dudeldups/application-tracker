@@ -32,12 +32,14 @@ import {
   type StatusFormValues,
 } from "../components/application-detail/forms";
 import { toDateTimeLocalInputValue } from "../lib/format";
+import { usePageTitle } from "../lib/usePageTitle";
 import type { ApplicationWithRelations } from "../types/application";
 
 export function ApplicationDetailPage() {
   const { id = "" } = useParams();
   const navigate = useNavigate();
   const [application, setApplication] = useState<ApplicationWithRelations | null>(null);
+  usePageTitle(application ? application.companyName : "Application Details");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmittingStatus, setIsSubmittingStatus] = useState(false);

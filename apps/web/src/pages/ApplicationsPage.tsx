@@ -29,6 +29,7 @@ import {
   statusMeta,
 } from "../lib/applicationMeta";
 import { formatDate } from "../lib/format";
+import { usePageTitle } from "../lib/usePageTitle";
 import { StatusBadge } from "../components/StatusBadge";
 import type { ApplicationStatus, ApplicationWithRelations } from "../types/application";
 
@@ -229,6 +230,8 @@ function SortableHeader({
 }
 
 export function ApplicationsPage() {
+  usePageTitle("Applications");
+
   const [applications, setApplications] = useState<ApplicationWithRelations[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

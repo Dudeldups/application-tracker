@@ -16,6 +16,7 @@ import { Link } from "react-router";
 import { getApplications } from "../api/applications";
 import { statusMeta } from "../lib/applicationMeta";
 import { formatDate } from "../lib/format";
+import { usePageTitle } from "../lib/usePageTitle";
 import type { ApplicationStatus, ApplicationWithRelations } from "../types/application";
 
 const finishedStatuses: ApplicationStatus[] = [
@@ -112,6 +113,8 @@ function getDayDifference(start: Date, end: Date) {
 }
 
 export function DashboardPage() {
+  usePageTitle("Dashboard");
+
   const [applications, setApplications] = useState<ApplicationWithRelations[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

@@ -9,8 +9,11 @@ import {
   toApplicationPayload,
   type ApplicationFormValues,
 } from "../components/applicationFormSchema";
+import { usePageTitle } from "../lib/usePageTitle";
 
 export function NewApplicationPage() {
+  usePageTitle("New Application");
+
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
 

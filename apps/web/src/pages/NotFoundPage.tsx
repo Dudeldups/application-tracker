@@ -1,7 +1,11 @@
 import { Anchor, Card, Group, Stack, Text, Title } from "@mantine/core";
 import { Link } from "react-router";
 
+import { usePageTitle } from "../lib/usePageTitle";
+
 export function NotFoundPage() {
+  usePageTitle("Page Not Found");
+
   return (
     <Card withBorder radius="md">
       <Stack gap="sm">
