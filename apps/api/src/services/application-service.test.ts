@@ -2,7 +2,9 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { type PrismaClient } from "../generated/prisma/client.js";
 import {
+  createApplicationCommunication,
   createApplicationContact,
+  deleteApplicationContact,
   deleteApplicationCommunication,
   deleteStatusHistoryEntry,
   updateApplicationWithStatusHistory,
@@ -186,6 +188,58 @@ test("createApplicationContact normalizes empty strings before saving", async ()
   });
 });
 
+test("deleteApplicationContact deletes a matching contact", async () => {
+  let deleteArgs: unknown;
+
+  const prisma = createPrismaMock({
+    contact: {
+      findFirst: async () => ({ id: "contact-1", applicationId: "app-1" }),
+      delete: async (args: unknown) => {
+        deleteArgs = args;
+        return { id: "contact-1" };
+      },
+    },
+  });
+
+  await deleteApplicationContact(prisma, "app-1", "contact-1");
+
+  assert.deepEqual(deleteArgs, {
+    where: { id: "contact-1" },
+  });
+});
+
+test("createApplicationCommunication converts the optional date before saving", async () => {
+  let createArgs: unknown;
+
+  const prisma = createPrismaMock({
+    communication: {
+      create: async (args: unknown) => {
+        createArgs = args;
+        return { id: "comm-1" };
+      },
+    },
+  });
+
+  await createApplicationCommunication(prisma, "app-1", {
+    type: "email",
+    direction: "incoming",
+    summary: "Recruiter replied",
+    body: "Let's talk.",
+    date: "2026-05-15T12:00:00.000Z",
+  });
+
+  assert.deepEqual(createArgs, {
+    data: {
+      applicationId: "app-1",
+      type: "email",
+      direction: "incoming",
+      summary: "Recruiter replied",
+      body: "Let's talk.",
+      date: new Date("2026-05-15T12:00:00.000Z"),
+    },
+  });
+});
+
 test("deleteApplicationCommunication throws when the communication does not belong to the application", async () => {
   const prisma = createPrismaMock({
     communication: {
@@ -199,4 +253,24 @@ test("deleteApplicationCommunication throws when the communication does not belo
       error instanceof NotFoundError &&
       error.message === "Communication not found",
   );
+});
+
+test("deleteApplicationCommunication deletes a matching communication", async () => {
+  let deleteArgs: unknown;
+
+  const prisma = createPrismaMock({
+    communication: {
+      findFirst: async () => ({ id: "comm-1", applicationId: "app-1" }),
+      delete: async (args: unknown) => {
+        deleteArgs = args;
+        return { id: "comm-1" };
+      },
+    },
+  });
+
+  await deleteApplicationCommunication(prisma, "app-1", "comm-1");
+
+  assert.deepEqual(deleteArgs, {
+    where: { id: "comm-1" },
+  });
 });
