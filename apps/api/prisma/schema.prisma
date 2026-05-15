@@ -54,7 +54,6 @@ model Application {
   coverLetterVersion String?
   usedCoverLetter    Boolean @default(false)
 
-  focusNotes         String?
   customizationNotes String?
   notes              String?
 
