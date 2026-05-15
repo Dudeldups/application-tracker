@@ -357,8 +357,19 @@ export function ApplicationDetailPage() {
     );
   }
 
-  const initialStatusEntryId =
-    application.statusHistory[application.statusHistory.length - 1]?.id;
+  const initialStatusEntry = application.statusHistory.reduce<
+    ApplicationWithRelations["statusHistory"][number] | undefined
+  >((oldestEntry, entry) => {
+    if (!oldestEntry) {
+      return entry;
+    }
+
+    return new Date(entry.changedAt).getTime() <
+      new Date(oldestEntry.changedAt).getTime()
+      ? entry
+      : oldestEntry;
+  }, undefined);
+  const initialStatusEntryId = initialStatusEntry?.id;
 
   return (
     <Stack gap="md">
