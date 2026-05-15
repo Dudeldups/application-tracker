@@ -78,6 +78,83 @@ test("POST /api/applications returns 400 for an invalid request body", async () 
   assert.ok(Array.isArray(body.details));
 });
 
+test("POST /api/applications returns 201 and creates the initial status history entry", async () => {
+  let createArgs: unknown;
+
+  const prisma = createPrismaMock({
+    application: {
+      create: async (args: unknown) => {
+        createArgs = args;
+        return {
+          id: "app-1",
+          companyName: "ACME",
+          jobTitle: "Backend Engineer",
+          status: "interesting",
+          contacts: [],
+          statusHistory: [
+            {
+              id: "status-1",
+              status: "interesting",
+              note: "Initial status",
+            },
+          ],
+          communications: [],
+        };
+      },
+    },
+  });
+  const { baseUrl } = await startTestServer(prisma);
+
+  const response = await fetch(`${baseUrl}/api/applications`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      companyName: "ACME",
+      jobTitle: "Backend Engineer",
+      city: "Berlin",
+      usedCoverLetter: false,
+    }),
+  });
+  const body = await response.json();
+
+  assert.equal(response.status, 201);
+  assert.deepEqual(createArgs, {
+    data: {
+      companyName: "ACME",
+      jobTitle: "Backend Engineer",
+      city: "Berlin",
+      usedCoverLetter: false,
+      status: "interesting",
+      statusHistory: {
+        create: {
+          status: "interesting",
+          note: "Initial status",
+        },
+      },
+    },
+    include: {
+      contacts: true,
+      statusHistory: {
+        orderBy: { changedAt: "desc" },
+      },
+      communications: {
+        orderBy: { date: "desc" },
+      },
+    },
+  });
+  assert.equal(body.id, "app-1");
+  assert.equal(body.status, "interesting");
+  assert.deepEqual(body.statusHistory, [
+    {
+      id: "status-1",
+      status: "interesting",
+      note: "Initial status",
+    },
+  ]);
+});
+
 test("GET /api/applications/:id returns 404 when the application does not exist", async () => {
   const prisma = createPrismaMock({
     application: {
