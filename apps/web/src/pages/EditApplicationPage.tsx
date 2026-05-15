@@ -8,13 +8,14 @@ import { ApplicationForm } from "../components/ApplicationForm";
 import {
   toApplicationPayload,
   type ApplicationFormValues,
-} from "../components/applicationFormSchema";
+} from "../lib/schemas/applicationFormSchema";
 import { usePageTitle } from "../lib/usePageTitle";
 import type { ApplicationWithRelations } from "../types/application";
 
 export function EditApplicationPage() {
   const { id = "" } = useParams();
-  const [application, setApplication] = useState<ApplicationWithRelations | null>(null);
+  const [application, setApplication] =
+    useState<ApplicationWithRelations | null>(null);
   usePageTitle(
     application ? `Edit ${application.companyName}` : "Edit Application",
   );
@@ -53,7 +54,9 @@ export function EditApplicationPage() {
       notifications.show({
         color: "red",
         message:
-          submitError instanceof Error ? submitError.message : "Application could not be saved.",
+          submitError instanceof Error
+            ? submitError.message
+            : "Application could not be saved.",
       });
     } finally {
       setIsSubmitting(false);
@@ -80,7 +83,9 @@ export function EditApplicationPage() {
     <Stack gap="md">
       <div>
         <Title order={1}>Edit application</Title>
-        <Text c="dimmed">Update status, documents, and notes in one place.</Text>
+        <Text c="dimmed">
+          Update status, documents, and notes in one place.
+        </Text>
       </div>
 
       <ApplicationForm

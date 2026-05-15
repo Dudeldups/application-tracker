@@ -8,7 +8,7 @@ import { ApplicationForm } from "../components/ApplicationForm";
 import {
   toApplicationPayload,
   type ApplicationFormValues,
-} from "../components/applicationFormSchema";
+} from "../lib/schemas/applicationFormSchema";
 import { usePageTitle } from "../lib/usePageTitle";
 
 export function NewApplicationPage() {
@@ -33,7 +33,9 @@ export function NewApplicationPage() {
       notifications.show({
         color: "red",
         message:
-          error instanceof Error ? error.message : "Application could not be created.",
+          error instanceof Error
+            ? error.message
+            : "Application could not be created.",
       });
     } finally {
       setIsSubmitting(false);

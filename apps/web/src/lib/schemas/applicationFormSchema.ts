@@ -4,8 +4,8 @@ import {
   applicationStatuses,
   remoteTypes,
   type ApplicationWithRelations,
-} from "../types/application";
-import { toDateInputValue, toOptionalString } from "../lib/format";
+} from "../../types/application";
+import { toDateInputValue, toOptionalString } from "../format";
 
 const optionalTrimmedString = z.string().trim().optional();
 
@@ -23,7 +23,10 @@ const optionalUrlString = z
     message: "Please enter a URL starting with http:// or https://.",
   });
 
-const requiredRating = z.number().min(1).max(5, "Please enter a value between 1 and 5.");
+const requiredRating = z
+  .number()
+  .min(1)
+  .max(5, "Please enter a value between 1 and 5.");
 
 export const applicationFormSchema = z.object({
   companyName: z.string().trim().min(1, "Company is required."),

@@ -20,7 +20,7 @@ import {
   applicationFormSchema,
   buildApplicationFormValues,
   type ApplicationFormValues,
-} from "./applicationFormSchema";
+} from "../lib/schemas/applicationFormSchema";
 
 type ApplicationFormProps = {
   initialValues?: Partial<ApplicationWithRelations>;
@@ -191,7 +191,9 @@ export function ApplicationForm({
                   <Checkbox
                     label="Used cover letter"
                     checked={field.value}
-                    onChange={event => field.onChange(event.currentTarget.checked)}
+                    onChange={event =>
+                      field.onChange(event.currentTarget.checked)
+                    }
                   />
                 )}
               />
@@ -310,7 +312,11 @@ export function ApplicationForm({
               minRows={3}
               {...form.register("customizationNotes")}
             />
-            <Textarea label="General notes" minRows={4} {...form.register("notes")} />
+            <Textarea
+              label="General notes"
+              minRows={4}
+              {...form.register("notes")}
+            />
           </Stack>
         </Card>
 
