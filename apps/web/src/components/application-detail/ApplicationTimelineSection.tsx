@@ -11,7 +11,39 @@ type TimelineItem = {
   description: string;
   badge: string;
   color: string;
+  sortPriority: number;
 };
+
+function hasExplicitTime(value: string) {
+  return value.includes("T");
+}
+
+function getSortTimestamp(value: string, sortPriority: number) {
+  const parsedDate = new Date(value);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return Number.MAX_SAFE_INTEGER;
+  }
+
+  if (hasExplicitTime(value)) {
+    return parsedDate.getTime();
+  }
+
+  const syntheticHour = Math.min(sortPriority, 23);
+  parsedDate.setHours(syntheticHour, 0, 0, 0);
+  return parsedDate.getTime();
+}
+
+function formatTimelineDate(value: string) {
+  if (!hasExplicitTime(value)) {
+    return formatDate(value);
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(value));
+}
 
 function createTimelineItems(application: ApplicationWithRelations) {
   const items: TimelineItem[] = [
@@ -22,6 +54,7 @@ function createTimelineItems(application: ApplicationWithRelations) {
       description: `${application.companyName} - ${application.jobTitle}`,
       badge: "System",
       color: "gray",
+      sortPriority: 0,
     },
   ];
 
@@ -35,6 +68,7 @@ function createTimelineItems(application: ApplicationWithRelations) {
         : "Source not specified",
       badge: "Milestone",
       color: "blue",
+      sortPriority: 1,
     });
   }
 
@@ -46,6 +80,7 @@ function createTimelineItems(application: ApplicationWithRelations) {
       description: `${application.companyName} - ${application.jobTitle}`,
       badge: "Milestone",
       color: "cyan",
+      sortPriority: 2,
     });
   }
 
@@ -57,6 +92,7 @@ function createTimelineItems(application: ApplicationWithRelations) {
       description: "A contact date is stored for this application.",
       badge: "Contact",
       color: "teal",
+      sortPriority: 5,
     });
   }
 
@@ -68,6 +104,7 @@ function createTimelineItems(application: ApplicationWithRelations) {
       description: "A follow-up date is scheduled.",
       badge: "Follow-up",
       color: "orange",
+      sortPriority: 6,
     });
   }
 
@@ -81,6 +118,7 @@ function createTimelineItems(application: ApplicationWithRelations) {
         : statusMeta[entry.status].label,
       badge: "Status",
       color: statusMeta[entry.status].color,
+      sortPriority: 3,
     });
   });
 
@@ -92,14 +130,21 @@ function createTimelineItems(application: ApplicationWithRelations) {
       description: `${entry.type || "Communication"}: ${entry.summary}`,
       badge: "Communication",
       color: entry.direction === "incoming" ? "teal" : "grape",
+      sortPriority: 4,
     });
   });
 
   return items.sort((left, right) => {
-    const dateDifference = new Date(left.date).getTime() - new Date(right.date).getTime();
+    const dateDifference =
+      getSortTimestamp(left.date, left.sortPriority) -
+      getSortTimestamp(right.date, right.sortPriority);
 
     if (dateDifference !== 0) {
       return dateDifference;
+    }
+
+    if (left.sortPriority !== right.sortPriority) {
+      return left.sortPriority - right.sortPriority;
     }
 
     return left.label.localeCompare(right.label);
@@ -142,7 +187,7 @@ export function ApplicationTimelineSection({
                   <Group justify="space-between" align="start">
                     <Text fw={600}>{item.label}</Text>
                     <Text size="sm" c="dimmed">
-                      {formatDate(item.date)}
+                      {formatTimelineDate(item.date)}
                     </Text>
                   </Group>
                   <Text size="sm">{item.description}</Text>
