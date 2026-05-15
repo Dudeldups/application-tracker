@@ -34,3 +34,7 @@ if (!window.ResizeObserver) {
     value: ResizeObserverMock,
   });
 }
+
+if (!HTMLElement.prototype.scrollIntoView) {
+  HTMLElement.prototype.scrollIntoView = vi.fn();
+}
