@@ -170,6 +170,83 @@ test("PATCH /api/applications/:id/status returns 200 and appends a status histor
   ]);
 });
 
+test("PATCH /api/applications/:id returns 200 and appends status history when the status changes", async () => {
+  let updateArgs: unknown;
+
+  const prisma = createPrismaMock({
+    application: {
+      findUnique: async (args: unknown) => {
+        if (
+          typeof args === "object" &&
+          args !== null &&
+          "select" in args
+        ) {
+          return { status: "interesting" };
+        }
+
+        return null;
+      },
+      update: async (args: unknown) => {
+        updateArgs = args;
+        return {
+          id: "app-1",
+          companyName: "ACME",
+          jobTitle: "Backend Engineer",
+          status: "applied",
+          contacts: [],
+          statusHistory: [
+            {
+              id: "status-2",
+              status: "applied",
+            },
+          ],
+          communications: [],
+        };
+      },
+    },
+  });
+  const { baseUrl } = await startTestServer(prisma);
+
+  const response = await fetch(`${baseUrl}/api/applications/app-1`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      companyName: "ACME",
+      jobTitle: "Backend Engineer",
+      status: "applied",
+    }),
+  });
+  const body = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(updateArgs, {
+    where: { id: "app-1" },
+    data: {
+      companyName: "ACME",
+      jobTitle: "Backend Engineer",
+      status: "applied",
+      statusHistory: {
+        create: {
+          status: "applied",
+        },
+      },
+    },
+    include: {
+      contacts: true,
+      statusHistory: {
+        orderBy: { changedAt: "desc" },
+      },
+      communications: {
+        orderBy: { date: "desc" },
+      },
+    },
+  });
+  assert.equal(body.id, "app-1");
+  assert.equal(body.status, "applied");
+});
+
 test("DELETE /api/applications/:id returns 204 for an existing application", async () => {
   let deleteArgs: unknown;
 
