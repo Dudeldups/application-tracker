@@ -6,6 +6,7 @@ import { NewApplicationPage } from "./pages/NewApplicationPage";
 import { ApplicationDetailPage } from "./pages/ApplicationDetailPage";
 import { EditApplicationPage } from "./pages/EditApplicationPage";
 import { DashboardPage } from "./pages/DashboardPage";
+import { NotFoundPage } from "./pages/NotFoundPage";
 
 export const router = createBrowserRouter([
   {
@@ -35,6 +36,10 @@ export const router = createBrowserRouter([
       {
         path: "applications/:id/edit",
         Component: EditApplicationPage,
+      },
+      {
+        path: "*",
+        Component: NotFoundPage,
       },
     ],
   },
