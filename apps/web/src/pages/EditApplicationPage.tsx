@@ -1,42 +1,27 @@
-import { useEffect, useState } from "react";
-import { Card, Group, Loader, Stack, Text, Title } from "@mantine/core";
+import { useState } from "react";
+import { Card, Stack, Text, Title } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { useNavigate, useParams } from "react-router";
+import { useLoaderData, useNavigate, useParams } from "react-router";
 
-import { getApplication, updateApplication } from "../api/applications";
+import { updateApplication } from "../api/applications";
 import { ApplicationForm } from "../components/ApplicationForm";
 import {
   toApplicationPayload,
   type ApplicationFormValues,
 } from "../lib/schemas/applicationFormSchema";
 import { usePageTitle } from "../lib/usePageTitle";
-import type { ApplicationWithRelations } from "../types/application";
+import type { ApplicationPageLoaderData } from "./applicationLoaders";
 
 export function EditApplicationPage() {
   const { id = "" } = useParams();
-  const [application, setApplication] =
-    useState<ApplicationWithRelations | null>(null);
+  const { application, error } =
+    useLoaderData() as ApplicationPageLoaderData;
   usePageTitle(
     application ? `Edit ${application.companyName}` : "Edit Application",
   );
 
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    getApplication(id)
-      .then(setApplication)
-      .catch((loadError: unknown) => {
-        setError(
-          loadError instanceof Error
-            ? loadError.message
-            : "Application could not be loaded.",
-        );
-      })
-      .finally(() => setIsLoading(false));
-  }, [id]);
 
   async function handleSubmit(values: ApplicationFormValues) {
     setIsSubmitting(true);
@@ -63,14 +48,6 @@ export function EditApplicationPage() {
     }
   }
 
-  if (isLoading) {
-    return (
-      <Group justify="center" p="xl">
-        <Loader />
-      </Group>
-    );
-  }
-
   if (error || !application) {
     return (
       <Card withBorder>
@@ -89,6 +66,7 @@ export function EditApplicationPage() {
       </div>
 
       <ApplicationForm
+        key={application.id}
         initialValues={application}
         submitLabel="Save changes"
         onSubmit={handleSubmit}

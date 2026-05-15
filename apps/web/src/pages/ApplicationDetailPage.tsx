@@ -1,10 +1,15 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Card, Group, Loader, SimpleGrid, Stack, Text } from "@mantine/core";
+import { Card, SimpleGrid, Stack, Text } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate, useParams } from "react-router";
+import {
+  useLoaderData,
+  useNavigate,
+  useParams,
+  useRevalidator,
+} from "react-router";
 
 import {
   createApplicationCommunication,
@@ -13,7 +18,6 @@ import {
   deleteApplicationCommunication,
   deleteApplicationContact,
   deleteApplicationStatusHistoryEntry,
-  getApplication,
   updateApplicationStatus,
 } from "../api/applications";
 import { ApplicationDetailHeader } from "../components/application-detail/ApplicationDetailHeader";
@@ -34,15 +38,16 @@ import {
 import { toDateTimeLocalInputValue } from "../lib/format";
 import { usePageTitle } from "../lib/usePageTitle";
 import type { ApplicationWithRelations } from "../types/application";
+import type { ApplicationPageLoaderData } from "./applicationLoaders";
 
-export function ApplicationDetailPage() {
+function ApplicationDetailContent({
+  application,
+}: {
+  application: ApplicationWithRelations;
+}) {
   const { id = "" } = useParams();
   const navigate = useNavigate();
-  const [application, setApplication] =
-    useState<ApplicationWithRelations | null>(null);
-  usePageTitle(application ? application.companyName : "Application Details");
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const revalidator = useRevalidator();
   const [isSubmittingStatus, setIsSubmittingStatus] = useState(false);
   const [isSubmittingContact, setIsSubmittingContact] = useState(false);
   const [isSubmittingCommunication, setIsSubmittingCommunication] =
@@ -86,7 +91,7 @@ export function ApplicationDetailPage() {
   const statusForm = useForm<StatusFormValues>({
     resolver: zodResolver(statusFormSchema),
     defaultValues: {
-      status: "interesting",
+      status: application.status,
       note: "",
     },
   });
@@ -112,38 +117,16 @@ export function ApplicationDetailPage() {
     },
   });
 
-  const loadApplication = useCallback(async () => {
-    try {
-      const loaded = await getApplication(id);
-      setApplication(loaded);
-      setError(null);
-      statusForm.reset({
-        status: loaded.status,
-        note: "",
-      });
-    } catch (loadError) {
-      setError(
-        loadError instanceof Error
-          ? loadError.message
-          : "Application could not be loaded.",
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  }, [id, statusForm]);
-
-  /* eslint-disable react-hooks/set-state-in-effect */
-  useEffect(() => {
-    void loadApplication();
-  }, [loadApplication]);
-  /* eslint-enable react-hooks/set-state-in-effect */
+  async function revalidateApplication() {
+    await revalidator.revalidate();
+  }
 
   async function handleStatusSubmit(values: StatusFormValues) {
     setIsSubmittingStatus(true);
 
     try {
       await updateApplicationStatus(id, values);
-      await loadApplication();
+      await revalidateApplication();
       statusForm.reset({
         status: values.status,
         note: "",
@@ -170,7 +153,7 @@ export function ApplicationDetailPage() {
 
     try {
       await createApplicationContact(id, values);
-      await loadApplication();
+      await revalidateApplication();
       contactForm.reset();
       notifications.show({
         color: "green",
@@ -194,7 +177,7 @@ export function ApplicationDetailPage() {
 
     try {
       await createApplicationCommunication(id, values);
-      await loadApplication();
+      await revalidateApplication();
       communicationForm.reset({
         type: "",
         direction: "incoming",
@@ -220,10 +203,6 @@ export function ApplicationDetailPage() {
   }
 
   async function handleDelete() {
-    if (!application) {
-      return;
-    }
-
     setIsDeleting(true);
 
     try {
@@ -259,7 +238,7 @@ export function ApplicationDetailPage() {
         id,
         statusEntryToDelete.id,
       );
-      setApplication(updated);
+      await revalidateApplication();
       statusForm.reset({
         status: updated.status,
         note: "",
@@ -292,7 +271,7 @@ export function ApplicationDetailPage() {
 
     try {
       await deleteApplicationContact(id, contactToDelete.id);
-      await loadApplication();
+      await revalidateApplication();
       closeContactDeleteModal();
       setContactToDelete(null);
       notifications.show({
@@ -321,7 +300,7 @@ export function ApplicationDetailPage() {
 
     try {
       await deleteApplicationCommunication(id, communicationToDelete.id);
-      await loadApplication();
+      await revalidateApplication();
       closeCommunicationDeleteModal();
       setCommunicationToDelete(null);
       notifications.show({
@@ -339,22 +318,6 @@ export function ApplicationDetailPage() {
     } finally {
       setIsDeletingCommunication(false);
     }
-  }
-
-  if (isLoading) {
-    return (
-      <Group justify="center" p="xl">
-        <Loader />
-      </Group>
-    );
-  }
-
-  if (error || !application) {
-    return (
-      <Card withBorder>
-        <Text c="red">{error ?? "Application not found."}</Text>
-      </Card>
-    );
   }
 
   const initialStatusEntry = application.statusHistory.reduce<
@@ -453,4 +416,23 @@ export function ApplicationDetailPage() {
       </SimpleGrid>
     </Stack>
   );
+}
+
+export function ApplicationDetailPage() {
+  const { application, error } =
+    useLoaderData() as ApplicationPageLoaderData;
+
+  usePageTitle(
+    application ? application.companyName : "Application Details",
+  );
+
+  if (error || !application) {
+    return (
+      <Card withBorder>
+        <Text c="red">{error ?? "Application not found."}</Text>
+      </Card>
+    );
+  }
+
+  return <ApplicationDetailContent key={application.id} application={application} />;
 }

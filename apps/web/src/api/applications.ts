@@ -69,8 +69,11 @@ export function getApplicationsWithDetails(): Promise<ApplicationWithRelations[]
   return request<ApplicationWithRelations[]>("/api/applications?include=details");
 }
 
-export function getApplication(id: string): Promise<ApplicationWithRelations> {
-  return request<ApplicationWithRelations>(`/api/applications/${id}`);
+export function getApplication(
+  id: string,
+  init?: RequestInit,
+): Promise<ApplicationWithRelations> {
+  return request<ApplicationWithRelations>(`/api/applications/${id}`, init);
 }
 
 export function createApplication(
