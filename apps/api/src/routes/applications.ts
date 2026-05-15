@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { type ZodType, type infer as ZodInfer } from "zod";
 import { PrismaClient } from "../generated/prisma/client.js";
 import {
   createApplicationSchema,
@@ -9,6 +10,7 @@ import {
   updateStatusSchema,
 } from "../schemas/applicationSchemas.js";
 import { emptyStringToUndefined, omitUndefined } from "../lib/object.js";
+import { BadRequestError, NotFoundError, mapPrismaError } from "../lib/errors.js";
 
 export function createApplicationsRouter(prisma: PrismaClient) {
   const router = Router();
@@ -79,17 +81,7 @@ export function createApplicationsRouter(prisma: PrismaClient) {
   });
 
   router.post("/", async (req, res) => {
-    const result = createApplicationSchema.safeParse(req.body);
-
-    if (!result.success) {
-      res.status(400).json({
-        error: "Invalid request body",
-        issues: result.error.issues,
-      });
-      return;
-    }
-
-    const data = result.data;
+    const data = parseBody(createApplicationSchema, req.body);
     const status = data.status ?? "interesting";
 
     const application = await prisma.application.create({
@@ -117,62 +109,44 @@ export function createApplicationsRouter(prisma: PrismaClient) {
     });
 
     if (!application) {
-      res.status(404).json({ error: "Application not found" });
-      return;
+      throw new NotFoundError("Application not found");
     }
 
     res.json(application);
   });
 
   router.patch("/:id", async (req, res) => {
-    const result = updateApplicationSchema.safeParse(req.body);
+    const data = parseBody(updateApplicationSchema, req.body);
+    const existingApplication = await prisma.application.findUnique({
+      where: { id: req.params.id },
+      select: { status: true },
+    });
 
-    if (!result.success) {
-      res.status(400).json({
-        error: "Invalid request body",
-        issues: result.error.issues,
-      });
-      return;
+    if (!existingApplication) {
+      throw new NotFoundError("Application not found");
     }
 
-    const data = result.data;
+    const isStatusChange =
+      data.status !== undefined && data.status !== existingApplication.status;
 
-    try {
-      const existingApplication = await prisma.application.findUnique({
-        where: { id: req.params.id },
-        select: { status: true },
-      });
-
-      if (!existingApplication) {
-        res.status(404).json({ error: "Application not found" });
-        return;
-      }
-
-      const isStatusChange =
-        data.status !== undefined && data.status !== existingApplication.status;
-
-      const application = await prisma.application.update({
-        where: { id: req.params.id },
-        data: {
-          ...buildApplicationData(data),
-          ...(isStatusChange
-            ? {
-                statusHistory: {
-                  create: {
-                    status: data.status!,
-                  },
+    const application = await prisma.application.update({
+      where: { id: req.params.id },
+      data: {
+        ...buildApplicationData(data),
+        ...(isStatusChange
+          ? {
+              statusHistory: {
+                create: {
+                  status: data.status!,
                 },
-              }
-            : {}),
-        },
-        include: applicationDetailInclude,
-      });
+              },
+            }
+          : {}),
+      },
+      include: applicationDetailInclude,
+    });
 
-      res.json(application);
-    } catch (error) {
-      console.error(error);
-      res.status(404).json({ error: "Application not found" });
-    }
+    res.json(application);
   });
 
   router.delete("/:id", async (req, res) => {
@@ -180,25 +154,15 @@ export function createApplicationsRouter(prisma: PrismaClient) {
       await prisma.application.delete({
         where: { id: req.params.id },
       });
-
-      res.status(204).send();
-    } catch {
-      res.status(404).json({ error: "Application not found" });
+    } catch (error) {
+      throw mapPrismaError(error, { P2025: "Application not found" });
     }
+
+    res.status(204).send();
   });
 
   router.patch("/:id/status", async (req, res) => {
-    const result = updateStatusSchema.safeParse(req.body);
-
-    if (!result.success) {
-      res.status(400).json({
-        error: "Invalid request body",
-        issues: result.error.issues,
-      });
-      return;
-    }
-
-    const { status, note } = result.data;
+    const { status, note } = parseBody(updateStatusSchema, req.body);
 
     try {
       const application = await prisma.application.update({
@@ -216,8 +180,8 @@ export function createApplicationsRouter(prisma: PrismaClient) {
       });
 
       res.json(application);
-    } catch {
-      res.status(404).json({ error: "Application not found" });
+    } catch (error) {
+      throw mapPrismaError(error, { P2025: "Application not found" });
     }
   });
 
@@ -234,8 +198,7 @@ export function createApplicationsRouter(prisma: PrismaClient) {
     });
 
     if (!application) {
-      res.status(404).json({ error: "Application not found" });
-      return;
+      throw new NotFoundError("Application not found");
     }
 
     const targetEntry = application.statusHistory.find(
@@ -243,15 +206,13 @@ export function createApplicationsRouter(prisma: PrismaClient) {
     );
 
     if (!targetEntry) {
-      res.status(404).json({ error: "Status entry not found" });
-      return;
+      throw new NotFoundError("Status entry not found");
     }
 
     const initialEntry = application.statusHistory[0];
 
     if (!initialEntry || initialEntry.id === statusHistoryId) {
-      res.status(400).json({ error: "Initial status cannot be deleted" });
-      return;
+      throw new BadRequestError("Initial status cannot be deleted");
     }
 
     const remainingEntries = application.statusHistory.filter(
@@ -260,10 +221,9 @@ export function createApplicationsRouter(prisma: PrismaClient) {
     const latestRemainingEntry = remainingEntries[remainingEntries.length - 1];
 
     if (!latestRemainingEntry) {
-      res
-        .status(400)
-        .json({ error: "Application must keep at least one status entry" });
-      return;
+      throw new BadRequestError(
+        "Application must keep at least one status entry",
+      );
     }
 
     await prisma.$transaction([
@@ -287,17 +247,7 @@ export function createApplicationsRouter(prisma: PrismaClient) {
   });
 
   router.post("/:id/communications", async (req, res) => {
-    const result = createCommunicationSchema.safeParse(req.body);
-
-    if (!result.success) {
-      res.status(400).json({
-        error: "Invalid request body",
-        issues: result.error.issues,
-      });
-      return;
-    }
-
-    const data = result.data;
+    const data = parseBody(createCommunicationSchema, req.body);
 
     try {
       const communication = await prisma.communication.create({
@@ -312,23 +262,13 @@ export function createApplicationsRouter(prisma: PrismaClient) {
       });
 
       res.status(201).json(communication);
-    } catch {
-      res.status(404).json({ error: "Application not found" });
+    } catch (error) {
+      throw mapPrismaError(error, { P2003: "Application not found" });
     }
   });
 
   router.post("/:id/contacts", async (req, res) => {
-    const result = createContactSchema.safeParse(req.body);
-
-    if (!result.success) {
-      res.status(400).json({
-        error: "Invalid request body",
-        issues: result.error.issues,
-      });
-      return;
-    }
-
-    const data = result.data;
+    const data = parseBody(createContactSchema, req.body);
 
     try {
       const contact = await prisma.contact.create({
@@ -342,8 +282,8 @@ export function createApplicationsRouter(prisma: PrismaClient) {
       });
 
       res.status(201).json(contact);
-    } catch {
-      res.status(404).json({ error: "Application not found" });
+    } catch (error) {
+      throw mapPrismaError(error, { P2003: "Application not found" });
     }
   });
 
@@ -358,8 +298,7 @@ export function createApplicationsRouter(prisma: PrismaClient) {
     });
 
     if (!communication) {
-      res.status(404).json({ error: "Communication not found" });
-      return;
+      throw new NotFoundError("Communication not found");
     }
 
     await prisma.communication.delete({
@@ -380,8 +319,7 @@ export function createApplicationsRouter(prisma: PrismaClient) {
     });
 
     if (!contact) {
-      res.status(404).json({ error: "Contact not found" });
-      return;
+      throw new NotFoundError("Contact not found");
     }
 
     await prisma.contact.delete({
