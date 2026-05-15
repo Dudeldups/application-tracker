@@ -3,9 +3,9 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { renderWithProviders } from "../test/test-utils";
+import { buildApplication } from "../test/factories";
 import { ApplicationsPage } from "./ApplicationsPage";
 import { getApplicationsList } from "../api/applications";
-import type { Application } from "../types/application";
 
 vi.mock("../api/applications", () => ({
   getApplicationsList: vi.fn(),
@@ -14,36 +14,6 @@ vi.mock("../api/applications", () => ({
 vi.mock("../lib/usePageTitle", () => ({
   usePageTitle: vi.fn(),
 }));
-
-function buildApplication(overrides: Partial<Application> = {}): Application {
-  return {
-    id: "app-1",
-    createdAt: "2026-05-01T09:00:00.000Z",
-    updatedAt: "2026-05-01T09:00:00.000Z",
-    companyName: "Acme Corp",
-    jobTitle: "Frontend Engineer",
-    city: "Berlin",
-    address: "Main Street 1",
-    remoteType: "remote",
-    source: "LinkedIn",
-    jobUrl: "https://example.com/job",
-    status: "applied",
-    foundAt: "2026-05-01",
-    appliedAt: "2026-05-03",
-    lastContactAt: "2026-05-05",
-    followUpAt: "2026-05-20",
-    jobAdText: "Job ad",
-    cvVersion: "v1",
-    coverLetterVersion: "v1",
-    usedCoverLetter: true,
-    customizationNotes: "Tailor intro",
-    notes: "General notes",
-    interestRating: 4,
-    skillFitRating: 4,
-    priorityRating: 5,
-    ...overrides,
-  };
-}
 
 describe("ApplicationsPage", () => {
   beforeEach(() => {

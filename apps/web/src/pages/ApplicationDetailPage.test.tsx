@@ -3,6 +3,10 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { renderWithProviders } from "../test/test-utils";
+import {
+  buildApplicationWithRelations,
+  buildContact,
+} from "../test/factories";
 import { notifications } from "@mantine/notifications";
 import { ApplicationDetailPage } from "./ApplicationDetailPage";
 import {
@@ -206,61 +210,11 @@ vi.mock("../components/application-detail/CommunicationSection", () => ({
   ),
 }));
 
-function buildApplication(
-  overrides: Partial<ApplicationWithRelations> = {},
-): ApplicationWithRelations {
-  return {
-    id: "app-1",
-    createdAt: "2026-05-10T09:00:00.000Z",
-    updatedAt: "2026-05-10T09:00:00.000Z",
-    companyName: "Acme Corp",
-    jobTitle: "Frontend Engineer",
-    city: "Berlin",
-    address: "Main Street 1",
-    remoteType: "remote",
-    source: "LinkedIn",
-    jobUrl: "https://example.com/job",
-    status: "applied",
-    foundAt: "2026-05-01",
-    appliedAt: "2026-05-03",
-    lastContactAt: "2026-05-05",
-    followUpAt: "2026-05-20",
-    jobAdText: "Job ad",
-    cvVersion: "v1",
-    coverLetterVersion: "v1",
-    usedCoverLetter: true,
-    customizationNotes: "Tailor intro",
-    notes: "General notes",
-    interestRating: 4,
-    skillFitRating: 4,
-    priorityRating: 5,
-    contacts: [],
-    statusHistory: [
-      {
-        id: "status-1",
-        applicationId: "app-1",
-        status: "interesting",
-        changedAt: "2026-05-01T09:00:00.000Z",
-        note: null,
-      },
-      {
-        id: "status-2",
-        applicationId: "app-1",
-        status: "applied",
-        changedAt: "2026-05-03T09:00:00.000Z",
-        note: null,
-      },
-    ],
-    communications: [],
-    ...overrides,
-  };
-}
-
 describe("ApplicationDetailPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     useLoaderDataMock.mockReturnValue({
-      application: buildApplication(),
+      application: buildApplicationWithRelations(),
       error: null,
     });
   });
@@ -277,7 +231,7 @@ describe("ApplicationDetailPage", () => {
   });
 
   it("updates the local page state from the status mutation response", async () => {
-    const updatedApplication = buildApplication({
+    const updatedApplication = buildApplicationWithRelations({
       status: "interview",
     });
 
@@ -306,25 +260,11 @@ describe("ApplicationDetailPage", () => {
 
   it("refreshes the application after creating a contact", async () => {
     vi.mocked(createApplicationContact).mockResolvedValue({
-      id: "contact-1",
-      applicationId: "app-1",
-      name: "Jane Recruiter",
-      role: "HR",
-      email: null,
-      phone: null,
+      ...buildContact(),
     });
     vi.mocked(getApplication).mockResolvedValue(
-      buildApplication({
-        contacts: [
-          {
-            id: "contact-1",
-            applicationId: "app-1",
-            name: "Jane Recruiter",
-            role: "HR",
-            email: null,
-            phone: null,
-          },
-        ],
+      buildApplicationWithRelations({
+        contacts: [buildContact()],
       }),
     );
 

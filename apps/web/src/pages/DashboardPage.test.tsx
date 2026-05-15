@@ -2,9 +2,13 @@ import { screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { renderWithProviders } from "../test/test-utils";
+import {
+  buildApplicationWithRelations,
+  buildCommunication,
+  buildStatusHistoryEntry,
+} from "../test/factories";
 import { DashboardPage } from "./DashboardPage";
 import { getApplicationsWithDetails } from "../api/applications";
-import type { ApplicationWithRelations } from "../types/application";
 
 vi.mock("../api/applications", () => ({
   getApplicationsWithDetails: vi.fn(),
@@ -13,41 +17,6 @@ vi.mock("../api/applications", () => ({
 vi.mock("../lib/usePageTitle", () => ({
   usePageTitle: vi.fn(),
 }));
-
-function buildApplication(
-  overrides: Partial<ApplicationWithRelations> = {},
-): ApplicationWithRelations {
-  return {
-    id: "app-1",
-    createdAt: "2026-05-01T09:00:00.000Z",
-    updatedAt: "2026-05-01T09:00:00.000Z",
-    companyName: "Acme Corp",
-    jobTitle: "Frontend Engineer",
-    city: "Berlin",
-    address: "Main Street 1",
-    remoteType: "remote",
-    source: "LinkedIn",
-    jobUrl: "https://example.com/job",
-    status: "applied",
-    foundAt: "2026-05-01",
-    appliedAt: "2026-05-03",
-    lastContactAt: null,
-    followUpAt: "2026-05-20",
-    jobAdText: "Job ad",
-    cvVersion: "v1",
-    coverLetterVersion: "v1",
-    usedCoverLetter: true,
-    customizationNotes: "Tailor intro",
-    notes: "General notes",
-    interestRating: 4,
-    skillFitRating: 4,
-    priorityRating: 5,
-    contacts: [],
-    statusHistory: [],
-    communications: [],
-    ...overrides,
-  };
-}
 
 describe("DashboardPage", () => {
   beforeEach(() => {
@@ -78,56 +47,54 @@ describe("DashboardPage", () => {
 
   it("calculates response and interview metrics from incoming signals", async () => {
     vi.mocked(getApplicationsWithDetails).mockResolvedValue([
-      buildApplication({
+      buildApplicationWithRelations({
         id: "app-1",
         companyName: "Acme Corp",
         status: "applied",
         appliedAt: "2026-05-01",
         followUpAt: "2026-05-20",
+        lastContactAt: null,
         source: "LinkedIn",
       }),
-      buildApplication({
+      buildApplicationWithRelations({
         id: "app-2",
         companyName: "Beta GmbH",
         status: "applied",
         appliedAt: "2026-05-02",
         followUpAt: "2026-05-01",
+        lastContactAt: null,
         source: "Referral",
         communications: [
-          {
+          buildCommunication({
             id: "comm-1",
             applicationId: "app-2",
-            date: "2026-05-04T10:00:00.000Z",
-            type: "email",
-            direction: "incoming",
-            summary: "Recruiter replied",
-            body: null,
-          },
+          }),
         ],
       }),
-      buildApplication({
+      buildApplicationWithRelations({
         id: "app-3",
         companyName: "Gamma Labs",
         status: "interview",
         appliedAt: "2026-05-03",
         followUpAt: "2026-05-22",
+        lastContactAt: null,
         source: "LinkedIn",
         statusHistory: [
-          {
+          buildStatusHistoryEntry({
             id: "status-1",
             applicationId: "app-3",
             status: "interview",
             changedAt: "2026-05-05T09:00:00.000Z",
-            note: null,
-          },
+          }),
         ],
       }),
-      buildApplication({
+      buildApplicationWithRelations({
         id: "app-4",
         companyName: "Delta AG",
         status: "rejected",
         appliedAt: "2026-04-10",
         followUpAt: null,
+        lastContactAt: null,
         source: "Referral",
       }),
     ]);
@@ -163,21 +130,21 @@ describe("DashboardPage", () => {
 
   it("renders top sources and follow-ups in the expected order", async () => {
     vi.mocked(getApplicationsWithDetails).mockResolvedValue([
-      buildApplication({
+      buildApplicationWithRelations({
         id: "app-1",
         companyName: "Acme Corp",
         status: "applied",
         followUpAt: "2026-05-20",
         source: "LinkedIn",
       }),
-      buildApplication({
+      buildApplicationWithRelations({
         id: "app-2",
         companyName: "Beta GmbH",
         status: "interview",
         followUpAt: "2026-05-10",
         source: "Referral",
       }),
-      buildApplication({
+      buildApplicationWithRelations({
         id: "app-3",
         companyName: "Gamma Labs",
         status: "applied",
