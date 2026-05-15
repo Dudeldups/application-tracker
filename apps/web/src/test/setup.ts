@@ -38,3 +38,13 @@ if (!window.ResizeObserver) {
 if (!HTMLElement.prototype.scrollIntoView) {
   HTMLElement.prototype.scrollIntoView = vi.fn();
 }
+
+if (!document.fonts) {
+  Object.defineProperty(document, "fonts", {
+    writable: true,
+    value: {
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    },
+  });
+}
