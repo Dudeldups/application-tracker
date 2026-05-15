@@ -8,7 +8,6 @@ import {
   useLoaderData,
   useNavigate,
   useParams,
-  useRevalidator,
 } from "react-router";
 
 import {
@@ -18,6 +17,7 @@ import {
   deleteApplicationCommunication,
   deleteApplicationContact,
   deleteApplicationStatusHistoryEntry,
+  getApplication,
   updateApplicationStatus,
 } from "../api/applications";
 import { ApplicationDetailHeader } from "../components/application-detail/ApplicationDetailHeader";
@@ -47,7 +47,7 @@ function ApplicationDetailContent({
 }) {
   const { id = "" } = useParams();
   const navigate = useNavigate();
-  const revalidator = useRevalidator();
+  const [currentApplication, setCurrentApplication] = useState(application);
   const [isSubmittingStatus, setIsSubmittingStatus] = useState(false);
   const [isSubmittingContact, setIsSubmittingContact] = useState(false);
   const [isSubmittingCommunication, setIsSubmittingCommunication] =
@@ -91,7 +91,7 @@ function ApplicationDetailContent({
   const statusForm = useForm<StatusFormValues>({
     resolver: zodResolver(statusFormSchema),
     defaultValues: {
-      status: application.status,
+      status: currentApplication.status,
       note: "",
     },
   });
@@ -117,18 +117,22 @@ function ApplicationDetailContent({
     },
   });
 
-  async function revalidateApplication() {
-    await revalidator.revalidate();
+  async function refreshApplication() {
+    const refreshedApplication = await getApplication(id);
+
+    setCurrentApplication(refreshedApplication);
+
+    return refreshedApplication;
   }
 
   async function handleStatusSubmit(values: StatusFormValues) {
     setIsSubmittingStatus(true);
 
     try {
-      await updateApplicationStatus(id, values);
-      await revalidateApplication();
+      const updatedApplication = await updateApplicationStatus(id, values);
+      setCurrentApplication(updatedApplication);
       statusForm.reset({
-        status: values.status,
+        status: updatedApplication.status,
         note: "",
       });
       notifications.show({
@@ -153,7 +157,7 @@ function ApplicationDetailContent({
 
     try {
       await createApplicationContact(id, values);
-      await revalidateApplication();
+      await refreshApplication();
       contactForm.reset();
       notifications.show({
         color: "green",
@@ -177,7 +181,7 @@ function ApplicationDetailContent({
 
     try {
       await createApplicationCommunication(id, values);
-      await revalidateApplication();
+      await refreshApplication();
       communicationForm.reset({
         type: "",
         direction: "incoming",
@@ -238,7 +242,7 @@ function ApplicationDetailContent({
         id,
         statusEntryToDelete.id,
       );
-      await revalidateApplication();
+      setCurrentApplication(updated);
       statusForm.reset({
         status: updated.status,
         note: "",
@@ -271,7 +275,7 @@ function ApplicationDetailContent({
 
     try {
       await deleteApplicationContact(id, contactToDelete.id);
-      await revalidateApplication();
+      await refreshApplication();
       closeContactDeleteModal();
       setContactToDelete(null);
       notifications.show({
@@ -300,7 +304,7 @@ function ApplicationDetailContent({
 
     try {
       await deleteApplicationCommunication(id, communicationToDelete.id);
-      await revalidateApplication();
+      await refreshApplication();
       closeCommunicationDeleteModal();
       setCommunicationToDelete(null);
       notifications.show({
@@ -320,7 +324,7 @@ function ApplicationDetailContent({
     }
   }
 
-  const initialStatusEntry = application.statusHistory.reduce<
+  const initialStatusEntry = currentApplication.statusHistory.reduce<
     ApplicationWithRelations["statusHistory"][number] | undefined
   >((oldestEntry, entry) => {
     if (!oldestEntry) {
@@ -337,8 +341,8 @@ function ApplicationDetailContent({
   return (
     <Stack gap="md">
       <ApplicationDetailModals
-        companyName={application.companyName}
-        jobTitle={application.jobTitle}
+        companyName={currentApplication.companyName}
+        jobTitle={currentApplication.jobTitle}
         isDeleteModalOpen={isDeleteModalOpen}
         isStatusDeleteModalOpen={isStatusDeleteModalOpen}
         isContactDeleteModalOpen={isContactDeleteModalOpen}
@@ -370,17 +374,17 @@ function ApplicationDetailContent({
       />
 
       <ApplicationDetailHeader
-        application={application}
+        application={currentApplication}
         isDeleting={isDeleting}
         onDelete={openDeleteModal}
       />
 
-      <ApplicationSummarySection application={application} />
+      <ApplicationSummarySection application={currentApplication} />
 
-      <ApplicationTimelineSection application={application} />
+      <ApplicationTimelineSection application={currentApplication} />
 
       <StatusChangesSection
-        application={application}
+        application={currentApplication}
         form={statusForm}
         isSubmitting={isSubmittingStatus}
         initialStatusEntryId={initialStatusEntryId}
@@ -393,7 +397,7 @@ function ApplicationDetailContent({
 
       <SimpleGrid cols={{ base: 1, md: 2 }}>
         <ContactsSection
-          application={application}
+          application={currentApplication}
           form={contactForm}
           isSubmitting={isSubmittingContact}
           onSubmit={handleContactSubmit}
@@ -404,7 +408,7 @@ function ApplicationDetailContent({
         />
 
         <CommunicationSection
-          application={application}
+          application={currentApplication}
           form={communicationForm}
           isSubmitting={isSubmittingCommunication}
           onSubmit={handleCommunicationSubmit}
