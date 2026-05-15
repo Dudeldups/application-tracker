@@ -13,7 +13,7 @@ import {
 } from "@mantine/core";
 import { Link } from "react-router";
 
-import { getApplications } from "../api/applications";
+import { getApplicationsWithDetails } from "../api/applications";
 import { statusMeta } from "../lib/applicationMeta";
 import { formatDate } from "../lib/format";
 import { usePageTitle } from "../lib/usePageTitle";
@@ -120,7 +120,7 @@ export function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    getApplications()
+    getApplicationsWithDetails()
       .then(setApplications)
       .catch((loadError: unknown) => {
         setError(

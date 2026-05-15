@@ -23,7 +23,7 @@ import {
 } from "@tabler/icons-react";
 import { Link } from "react-router";
 
-import { getApplications } from "../api/applications";
+import { getApplicationsList } from "../api/applications";
 import {
   remoteTypeMeta,
   statusMeta,
@@ -31,7 +31,7 @@ import {
 import { formatDate } from "../lib/format";
 import { usePageTitle } from "../lib/usePageTitle";
 import { StatusBadge } from "../components/StatusBadge";
-import type { ApplicationStatus, ApplicationWithRelations } from "../types/application";
+import type { Application, ApplicationStatus } from "../types/application";
 
 type SortColumn =
   | "companyName"
@@ -149,10 +149,7 @@ function compareNullableDate(
   return direction === "asc" ? result : -result;
 }
 
-function sortApplications(
-  applications: ApplicationWithRelations[],
-  sortState: SortState,
-) {
+function sortApplications(applications: Application[], sortState: SortState) {
   const sorted = [...applications];
 
   sorted.sort((left, right) => {
@@ -232,7 +229,7 @@ function SortableHeader({
 export function ApplicationsPage() {
   usePageTitle("Applications");
 
-  const [applications, setApplications] = useState<ApplicationWithRelations[]>([]);
+  const [applications, setApplications] = useState<Application[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<FilterOption>("open");
@@ -240,7 +237,7 @@ export function ApplicationsPage() {
   const [sortState, setSortState] = useState<SortState>(initialSort);
 
   useEffect(() => {
-    getApplications()
+    getApplicationsList()
       .then(setApplications)
       .catch((loadError: unknown) => {
         setError(

@@ -24,10 +24,21 @@ import {
 export function createApplicationsRouter(prisma: PrismaClient) {
   const router = Router();
 
-  router.get("/", async (_req, res) => {
+  router.get("/", async (req, res) => {
+    const includeDetails = req.query.include === "details";
+
+    if (includeDetails) {
+      const applications = await prisma.application.findMany({
+        orderBy: { createdAt: "desc" },
+        include: applicationDetailInclude,
+      });
+
+      res.json(applications);
+      return;
+    }
+
     const applications = await prisma.application.findMany({
       orderBy: { createdAt: "desc" },
-      include: applicationDetailInclude,
     });
 
     res.json(applications);
