@@ -5,12 +5,16 @@ import {
   createCommunicationSchema,
   createContactSchema,
   updateApplicationSchema,
+  type ApplicationInput,
   updateStatusSchema,
 } from "../schemas/applicationSchemas.js";
 import { emptyStringToUndefined, omitUndefined } from "../lib/object.js";
 
 export function createApplicationsRouter(prisma: PrismaClient) {
   const router = Router();
+  type ApplicationDataInput = {
+    [K in keyof ApplicationInput]?: ApplicationInput[K] | undefined;
+  };
 
   const applicationDetailInclude = {
     contacts: true,
@@ -21,6 +25,39 @@ export function createApplicationsRouter(prisma: PrismaClient) {
       orderBy: { date: "desc" },
     },
   } as const;
+
+  function buildApplicationData(data: ApplicationDataInput) {
+    return omitUndefined({
+      companyName: data.companyName,
+      jobTitle: data.jobTitle,
+      city: emptyStringToUndefined(data.city),
+      address: emptyStringToUndefined(data.address),
+      remoteType: data.remoteType,
+
+      source: emptyStringToUndefined(data.source),
+      jobUrl: emptyStringToUndefined(data.jobUrl),
+
+      status: data.status,
+
+      foundAt: data.foundAt ? new Date(data.foundAt) : undefined,
+      appliedAt: data.appliedAt ? new Date(data.appliedAt) : undefined,
+      lastContactAt: data.lastContactAt ? new Date(data.lastContactAt) : undefined,
+      followUpAt: data.followUpAt ? new Date(data.followUpAt) : undefined,
+
+      jobAdText: data.jobAdText,
+
+      cvVersion: emptyStringToUndefined(data.cvVersion),
+      coverLetterVersion: emptyStringToUndefined(data.coverLetterVersion),
+      usedCoverLetter: data.usedCoverLetter,
+
+      customizationNotes: data.customizationNotes,
+      notes: data.notes,
+
+      interestRating: data.interestRating,
+      skillFitRating: data.skillFitRating,
+      priorityRating: data.priorityRating,
+    });
+  }
 
   router.get("/", async (_req, res) => {
     const applications = await prisma.application.findMany({
@@ -46,45 +83,17 @@ export function createApplicationsRouter(prisma: PrismaClient) {
     const status = data.status ?? "interesting";
 
     const application = await prisma.application.create({
-      data: omitUndefined({
-        companyName: data.companyName,
-        jobTitle: data.jobTitle,
-        city: emptyStringToUndefined(data.city),
-        address: emptyStringToUndefined(data.address),
-        remoteType: data.remoteType,
-
-        source: emptyStringToUndefined(data.source),
-        jobUrl: emptyStringToUndefined(data.jobUrl),
-
+      data: {
+        ...buildApplicationData(data),
         status,
-
-        foundAt: data.foundAt ? new Date(data.foundAt) : undefined,
-        appliedAt: data.appliedAt ? new Date(data.appliedAt) : undefined,
-        lastContactAt: data.lastContactAt
-          ? new Date(data.lastContactAt)
-          : undefined,
-        followUpAt: data.followUpAt ? new Date(data.followUpAt) : undefined,
-
-        jobAdText: data.jobAdText,
-
-        cvVersion: emptyStringToUndefined(data.cvVersion),
-        coverLetterVersion: emptyStringToUndefined(data.coverLetterVersion),
         usedCoverLetter: data.usedCoverLetter ?? false,
-
-        customizationNotes: data.customizationNotes,
-        notes: data.notes,
-
-        interestRating: data.interestRating,
-        skillFitRating: data.skillFitRating,
-        priorityRating: data.priorityRating,
-
         statusHistory: {
           create: {
             status,
             note: "Initial status",
           },
         },
-      }),
+      },
       include: applicationDetailInclude,
     });
 
@@ -119,40 +128,33 @@ export function createApplicationsRouter(prisma: PrismaClient) {
     const data = result.data;
 
     try {
+      const existingApplication = await prisma.application.findUnique({
+        where: { id: req.params.id },
+        select: { status: true },
+      });
+
+      if (!existingApplication) {
+        res.status(404).json({ error: "Application not found" });
+        return;
+      }
+
+      const isStatusChange =
+        data.status !== undefined && data.status !== existingApplication.status;
+
       const application = await prisma.application.update({
         where: { id: req.params.id },
-        data: omitUndefined({
-          companyName: data.companyName,
-          jobTitle: data.jobTitle,
-          city: emptyStringToUndefined(data.city),
-          address: emptyStringToUndefined(data.address),
-          remoteType: data.remoteType,
-
-          source: emptyStringToUndefined(data.source),
-          jobUrl: emptyStringToUndefined(data.jobUrl),
-
-          status: data.status,
-
-          foundAt: data.foundAt ? new Date(data.foundAt) : undefined,
-          appliedAt: data.appliedAt ? new Date(data.appliedAt) : undefined,
-          lastContactAt: data.lastContactAt
-            ? new Date(data.lastContactAt)
-            : undefined,
-          followUpAt: data.followUpAt ? new Date(data.followUpAt) : undefined,
-
-          jobAdText: data.jobAdText,
-
-          cvVersion: emptyStringToUndefined(data.cvVersion),
-          coverLetterVersion: emptyStringToUndefined(data.coverLetterVersion),
-          usedCoverLetter: data.usedCoverLetter,
-
-          customizationNotes: data.customizationNotes,
-          notes: data.notes,
-
-          interestRating: data.interestRating,
-          skillFitRating: data.skillFitRating,
-          priorityRating: data.priorityRating,
-        }),
+        data: {
+          ...buildApplicationData(data),
+          ...(isStatusChange
+            ? {
+                statusHistory: {
+                  create: {
+                    status: data.status!,
+                  },
+                },
+              }
+            : {}),
+        },
         include: applicationDetailInclude,
       });
 

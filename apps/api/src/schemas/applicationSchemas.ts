@@ -65,6 +65,8 @@ export const createApplicationSchema = z.object({
   priorityRating: ratingSchema,
 });
 
+export type ApplicationInput = z.infer<typeof createApplicationSchema>;
+
 export const updateApplicationSchema = createApplicationSchema.partial();
 
 export const updateStatusSchema = z.object({
