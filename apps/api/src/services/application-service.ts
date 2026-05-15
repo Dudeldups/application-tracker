@@ -5,6 +5,7 @@ import { emptyStringToUndefined, omitUndefined } from "../lib/object.js";
 import { type ApplicationDataInput } from "../lib/application-data.js";
 import {
   type ApplicationStatusInput,
+  type CommunicationInput,
   type ContactInput,
 } from "../schemas/applicationSchemas.js";
 
@@ -163,5 +164,43 @@ export async function deleteApplicationContact(
 
   await prisma.contact.delete({
     where: { id: contactId },
+  });
+}
+
+export async function createApplicationCommunication(
+  prisma: PrismaClient,
+  applicationId: string,
+  input: CommunicationInput,
+) {
+  return prisma.communication.create({
+    data: omitUndefined({
+      applicationId,
+      type: input.type,
+      direction: input.direction,
+      summary: input.summary,
+      body: input.body,
+      date: input.date ? new Date(input.date) : undefined,
+    }),
+  });
+}
+
+export async function deleteApplicationCommunication(
+  prisma: PrismaClient,
+  applicationId: string,
+  communicationId: string,
+) {
+  const communication = await prisma.communication.findFirst({
+    where: {
+      id: communicationId,
+      applicationId,
+    },
+  });
+
+  if (!communication) {
+    throw new NotFoundError("Communication not found");
+  }
+
+  await prisma.communication.delete({
+    where: { id: communicationId },
   });
 }

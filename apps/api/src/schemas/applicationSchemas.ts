@@ -84,6 +84,8 @@ export const createCommunicationSchema = z.object({
   date: optionalDateStringSchema,
 });
 
+export type CommunicationInput = z.infer<typeof createCommunicationSchema>;
+
 export const createContactSchema = z.object({
   name: z.string().trim().optional(),
   role: z.string().trim().optional(),

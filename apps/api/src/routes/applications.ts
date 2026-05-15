@@ -15,7 +15,9 @@ import {
 } from "../lib/application-data.js";
 import { parseBody } from "../lib/validation.js";
 import {
+  createApplicationCommunication,
   createApplicationContact,
+  deleteApplicationCommunication,
   deleteApplicationContact,
   deleteStatusHistoryEntry,
   getApplicationOrThrow,
@@ -120,17 +122,11 @@ export function createApplicationsRouter(prisma: PrismaClient) {
     const data = parseBody(createCommunicationSchema, req.body);
 
     try {
-      const communication = await prisma.communication.create({
-        data: omitUndefined({
-          applicationId: req.params.id,
-          type: data.type,
-          direction: data.direction,
-          summary: data.summary,
-          body: data.body,
-          date: data.date ? new Date(data.date) : undefined,
-        }),
-      });
-
+      const communication = await createApplicationCommunication(
+        prisma,
+        req.params.id,
+        data,
+      );
       res.status(201).json(communication);
     } catch (error) {
       throw mapPrismaError(error, { P2003: "Application not found" });
@@ -149,23 +145,11 @@ export function createApplicationsRouter(prisma: PrismaClient) {
   });
 
   router.delete("/:id/communications/:communicationId", async (req, res) => {
-    const { id, communicationId } = req.params;
-
-    const communication = await prisma.communication.findFirst({
-      where: {
-        id: communicationId,
-        applicationId: id,
-      },
-    });
-
-    if (!communication) {
-      throw new NotFoundError("Communication not found");
-    }
-
-    await prisma.communication.delete({
-      where: { id: communicationId },
-    });
-
+    await deleteApplicationCommunication(
+      prisma,
+      req.params.id,
+      req.params.communicationId,
+    );
     res.status(204).send();
   });
 
