@@ -3,7 +3,7 @@ export function formatDate(value?: string | null) {
     return "Not set";
   }
 
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat("de-DE", {
     dateStyle: "medium",
   }).format(new Date(value));
 }
@@ -13,7 +13,7 @@ export function formatDateTime(value?: string | null) {
     return "Not set";
   }
 
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat("de-DE", {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
