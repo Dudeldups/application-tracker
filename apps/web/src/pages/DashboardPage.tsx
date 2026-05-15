@@ -55,8 +55,9 @@ const interviewStatuses = new Set<ApplicationStatus>([
 function hasResponse(application: ApplicationWithRelations) {
   return (
     responseStatuses.has(application.status) ||
-    Boolean(application.lastContactAt) ||
-    application.communications.length > 0
+    application.communications.some(
+      communication => communication.direction === "incoming",
+    )
   );
 }
 
