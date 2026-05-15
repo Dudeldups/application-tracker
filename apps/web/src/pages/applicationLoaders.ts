@@ -1,6 +1,7 @@
 import type { LoaderFunctionArgs } from "react-router";
 
 import { getApplication } from "../api/applications";
+import { getLoadErrorMessage, isAbortError } from "../lib/errors";
 import type { ApplicationWithRelations } from "../types/application";
 
 export type ApplicationPageLoaderData = {
@@ -20,12 +21,17 @@ async function loadApplicationForPage(
       error: null,
     };
   } catch (loadError) {
+    if (isAbortError(loadError)) {
+      throw loadError;
+    }
+
     return {
       application: null,
-      error:
-        loadError instanceof Error
-          ? loadError.message
-          : "Application could not be loaded.",
+      error: getLoadErrorMessage(loadError, {
+        fallbackMessage: "Application could not be loaded.",
+        notFoundMessage: "Application not found.",
+        networkMessage: "The application service could not be reached.",
+      }),
     };
   }
 }

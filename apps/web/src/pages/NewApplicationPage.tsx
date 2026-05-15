@@ -5,6 +5,7 @@ import { useNavigate } from "react-router";
 
 import { createApplication } from "../api/applications";
 import { ApplicationForm } from "../components/ApplicationForm";
+import { getErrorMessage } from "../lib/errors";
 import {
   toApplicationPayload,
   type ApplicationFormValues,
@@ -32,10 +33,10 @@ export function NewApplicationPage() {
     } catch (error) {
       notifications.show({
         color: "red",
-        message:
-          error instanceof Error
-            ? error.message
-            : "Application could not be created.",
+        message: getErrorMessage(
+          error,
+          "Application could not be created.",
+        ),
       });
     } finally {
       setIsSubmitting(false);

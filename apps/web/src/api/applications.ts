@@ -5,6 +5,7 @@ import type {
   ApplicationStatus,
   ApplicationWithRelations,
 } from "../types/application";
+import { ApiRequestError } from "../lib/errors";
 
 const apiUrl = import.meta.env.VITE_API_URL ?? "";
 
@@ -51,7 +52,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       // Fall back to the generic message when no JSON body exists.
     }
 
-    throw new Error(message);
+    throw new ApiRequestError(message, response.status);
   }
 
   if (response.status === 204) {

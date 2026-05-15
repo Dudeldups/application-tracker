@@ -35,6 +35,7 @@ import {
   type ContactFormValues,
   type StatusFormValues,
 } from "../lib/schemas/forms";
+import { getErrorMessage } from "../lib/errors";
 import { toDateTimeLocalInputValue } from "../lib/format";
 import { usePageTitle } from "../lib/usePageTitle";
 import type { ApplicationWithRelations } from "../types/application";
@@ -142,10 +143,10 @@ function ApplicationDetailContent({
     } catch (submitError) {
       notifications.show({
         color: "red",
-        message:
-          submitError instanceof Error
-            ? submitError.message
-            : "Status could not be updated.",
+        message: getErrorMessage(
+          submitError,
+          "Status could not be updated.",
+        ),
       });
     } finally {
       setIsSubmittingStatus(false);
@@ -166,10 +167,10 @@ function ApplicationDetailContent({
     } catch (submitError) {
       notifications.show({
         color: "red",
-        message:
-          submitError instanceof Error
-            ? submitError.message
-            : "Contact could not be saved.",
+        message: getErrorMessage(
+          submitError,
+          "Contact could not be saved.",
+        ),
       });
     } finally {
       setIsSubmittingContact(false);
@@ -196,10 +197,10 @@ function ApplicationDetailContent({
     } catch (submitError) {
       notifications.show({
         color: "red",
-        message:
-          submitError instanceof Error
-            ? submitError.message
-            : "Communication could not be saved.",
+        message: getErrorMessage(
+          submitError,
+          "Communication could not be saved.",
+        ),
       });
     } finally {
       setIsSubmittingCommunication(false);
@@ -220,10 +221,10 @@ function ApplicationDetailContent({
     } catch (deleteError) {
       notifications.show({
         color: "red",
-        message:
-          deleteError instanceof Error
-            ? deleteError.message
-            : "Application could not be deleted.",
+        message: getErrorMessage(
+          deleteError,
+          "Application could not be deleted.",
+        ),
       });
     } finally {
       setIsDeleting(false);
@@ -256,10 +257,10 @@ function ApplicationDetailContent({
     } catch (deleteError) {
       notifications.show({
         color: "red",
-        message:
-          deleteError instanceof Error
-            ? deleteError.message
-            : "Status entry could not be deleted.",
+        message: getErrorMessage(
+          deleteError,
+          "Status entry could not be deleted.",
+        ),
       });
     } finally {
       setIsDeletingStatusEntry(false);
@@ -285,10 +286,10 @@ function ApplicationDetailContent({
     } catch (deleteError) {
       notifications.show({
         color: "red",
-        message:
-          deleteError instanceof Error
-            ? deleteError.message
-            : "Contact could not be deleted.",
+        message: getErrorMessage(
+          deleteError,
+          "Contact could not be deleted.",
+        ),
       });
     } finally {
       setIsDeletingContact(false);
@@ -314,10 +315,10 @@ function ApplicationDetailContent({
     } catch (deleteError) {
       notifications.show({
         color: "red",
-        message:
-          deleteError instanceof Error
-            ? deleteError.message
-            : "Communication could not be deleted.",
+        message: getErrorMessage(
+          deleteError,
+          "Communication could not be deleted.",
+        ),
       });
     } finally {
       setIsDeletingCommunication(false);

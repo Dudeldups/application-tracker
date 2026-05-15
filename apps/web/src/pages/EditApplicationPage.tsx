@@ -5,6 +5,7 @@ import { useLoaderData, useNavigate, useParams } from "react-router";
 
 import { updateApplication } from "../api/applications";
 import { ApplicationForm } from "../components/ApplicationForm";
+import { getErrorMessage } from "../lib/errors";
 import {
   toApplicationPayload,
   type ApplicationFormValues,
@@ -38,10 +39,10 @@ export function EditApplicationPage() {
     } catch (submitError) {
       notifications.show({
         color: "red",
-        message:
-          submitError instanceof Error
-            ? submitError.message
-            : "Application could not be saved.",
+        message: getErrorMessage(
+          submitError,
+          "Application could not be saved.",
+        ),
       });
     } finally {
       setIsSubmitting(false);
