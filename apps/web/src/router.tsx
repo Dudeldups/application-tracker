@@ -2,9 +2,13 @@ import { Navigate, createBrowserRouter } from "react-router";
 
 import { AppLayout } from "./components/AppLayout";
 import { ApplicationsPage } from "./pages/ApplicationsPage";
-import { NewApplicationPage } from "./pages/NewApplicationPage";
 import { ApplicationDetailPage } from "./pages/ApplicationDetailPage";
 import { EditApplicationPage } from "./pages/EditApplicationPage";
+import {
+  applicationDetailLoader,
+  editApplicationLoader,
+} from "./pages/applicationLoaders";
+import { NewApplicationPage } from "./pages/NewApplicationPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 
@@ -31,10 +35,12 @@ export const router = createBrowserRouter([
       },
       {
         path: "applications/:id",
+        loader: applicationDetailLoader,
         Component: ApplicationDetailPage,
       },
       {
         path: "applications/:id/edit",
+        loader: editApplicationLoader,
         Component: EditApplicationPage,
       },
       {
