@@ -1,7 +1,7 @@
 import { Badge, Card, Group, Stack, Text, Title } from "@mantine/core";
 
 import { statusMeta } from "../../lib/applicationMeta";
-import { formatDate } from "../../lib/format";
+import { formatDate, formatDateTime } from "../../lib/format";
 import type { ApplicationWithRelations } from "../../types/application";
 
 type TimelineItem = {
@@ -35,15 +35,27 @@ function getSortTimestamp(
   return parsedDate.getTime();
 }
 
+function hasMeaningfulStoredTime(value: string) {
+  const parsedDate = new Date(value);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return false;
+  }
+
+  return !(
+    parsedDate.getUTCHours() === 0 &&
+    parsedDate.getUTCMinutes() === 0 &&
+    parsedDate.getUTCSeconds() === 0 &&
+    parsedDate.getUTCMilliseconds() === 0
+  );
+}
+
 function formatTimelineDate(value: string, hasExplicitTime: boolean) {
   if (!hasExplicitTime) {
     return formatDate(value);
   }
 
-  return new Intl.DateTimeFormat("en-US", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
+  return formatDateTime(value);
 }
 
 function createTimelineItems(application: ApplicationWithRelations) {
@@ -138,7 +150,7 @@ function createTimelineItems(application: ApplicationWithRelations) {
       badge: "Communication",
       color: entry.direction === "incoming" ? "teal" : "grape",
       sortPriority: 4,
-      hasExplicitTime: false,
+      hasExplicitTime: hasMeaningfulStoredTime(entry.date),
     });
   });
 

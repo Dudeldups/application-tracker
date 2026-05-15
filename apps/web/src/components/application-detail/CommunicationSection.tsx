@@ -13,7 +13,7 @@ import {
 import { IconTrash } from "@tabler/icons-react";
 import { Controller, type UseFormReturn } from "react-hook-form";
 
-import { formatDate } from "../../lib/format";
+import { formatDateTime } from "../../lib/format";
 import type { ApplicationWithRelations } from "../../types/application";
 import type { CommunicationFormValues } from "./forms";
 
@@ -61,8 +61,8 @@ export function CommunicationSection({
               )}
             />
             <TextInput
-              label="Date"
-              type="date"
+              label="Date and time"
+              type="datetime-local"
               {...form.register("date")}
               error={form.formState.errors.date?.message}
             />
@@ -89,7 +89,7 @@ export function CommunicationSection({
                     <Group justify="space-between" wrap="nowrap">
                       <Text fw={600}>{entry.summary}</Text>
                       <Text size="sm" c="dimmed">
-                        {formatDate(entry.date)}
+                        {formatDateTime(entry.date)}
                       </Text>
                     </Group>
                     <Text size="sm">

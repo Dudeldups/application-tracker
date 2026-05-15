@@ -31,6 +31,7 @@ import {
   type ContactFormValues,
   type StatusFormValues,
 } from "../components/application-detail/forms";
+import { toDateTimeLocalInputValue } from "../lib/format";
 import type { ApplicationWithRelations } from "../types/application";
 
 export function ApplicationDetailPage() {
@@ -98,7 +99,7 @@ export function ApplicationDetailPage() {
       direction: "incoming",
       summary: "",
       body: "",
-      date: "",
+      date: toDateTimeLocalInputValue(),
     },
   });
 
@@ -181,7 +182,13 @@ export function ApplicationDetailPage() {
     try {
       await createApplicationCommunication(id, values);
       await loadApplication();
-      communicationForm.reset();
+      communicationForm.reset({
+        type: "",
+        direction: "incoming",
+        summary: "",
+        body: "",
+        date: toDateTimeLocalInputValue(),
+      });
       notifications.show({
         color: "green",
         message: "Communication added.",
