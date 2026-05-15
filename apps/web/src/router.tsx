@@ -1,4 +1,8 @@
-import { Navigate, createBrowserRouter } from "react-router";
+import {
+  Navigate,
+  createBrowserRouter,
+  type RouteObject,
+} from "react-router";
 
 import { AppLayout } from "./components/AppLayout";
 import { ApplicationsPage } from "./pages/ApplicationsPage";
@@ -12,7 +16,7 @@ import { NewApplicationPage } from "./pages/NewApplicationPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 
-export const router = createBrowserRouter([
+export const routes: RouteObject[] = [
   {
     path: "/",
     Component: AppLayout,
@@ -49,4 +53,6 @@ export const router = createBrowserRouter([
       },
     ],
   },
-]);
+];
+
+export const router = createBrowserRouter(routes);
