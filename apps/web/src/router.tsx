@@ -5,6 +5,7 @@ import { ApplicationsPage } from "./pages/ApplicationsPage";
 import { NewApplicationPage } from "./pages/NewApplicationPage";
 import { ApplicationDetailPage } from "./pages/ApplicationDetailPage";
 import { EditApplicationPage } from "./pages/EditApplicationPage";
+import { DashboardPage } from "./pages/DashboardPage";
 
 export const router = createBrowserRouter([
   {
@@ -13,7 +14,11 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Navigate to="/applications" replace />,
+        element: <Navigate to="/dashboard" replace />,
+      },
+      {
+        path: "dashboard",
+        Component: DashboardPage,
       },
       {
         path: "applications",

@@ -1,6 +1,6 @@
 import { AppShell, Burger, Container, Group, NavLink, Title } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { IconBriefcase, IconPlus } from "@tabler/icons-react";
+import { IconBriefcase, IconLayoutDashboard, IconPlus } from "@tabler/icons-react";
 import { Link, Outlet, useLocation } from "react-router";
 
 export function AppLayout() {
@@ -49,6 +49,14 @@ export function AppLayout() {
 
       <AppShell.Navbar p="md">
         <Group gap="xs" className="flex-col items-stretch">
+          <NavLink
+            component={Link}
+            to="/dashboard"
+            label="Dashboard"
+            leftSection={<IconLayoutDashboard size={18} />}
+            active={location.pathname === "/dashboard"}
+            onClick={close}
+          />
           <NavLink
             component={Link}
             to="/applications"
