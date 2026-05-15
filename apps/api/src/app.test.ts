@@ -225,6 +225,30 @@ test("PATCH /api/applications/:id/status returns 200 and appends a status histor
   ]);
 });
 
+test("DELETE /api/applications/:id returns 204 for an existing application", async () => {
+  let deleteArgs: unknown;
+
+  const prisma = createPrismaMock({
+    application: {
+      delete: async (args: unknown) => {
+        deleteArgs = args;
+        return { id: "app-1" };
+      },
+    },
+  });
+  const { baseUrl } = await startTestServer(prisma);
+
+  const response = await fetch(`${baseUrl}/api/applications/app-1`, {
+    method: "DELETE",
+  });
+
+  assert.equal(response.status, 204);
+  assert.equal(await response.text(), "");
+  assert.deepEqual(deleteArgs, {
+    where: { id: "app-1" },
+  });
+});
+
 test("GET /api/applications/:id returns 404 when the application does not exist", async () => {
   const prisma = createPrismaMock({
     application: {
