@@ -59,6 +59,16 @@ export function createApplicationsRouter(prisma: PrismaClient) {
     });
   }
 
+  function parseBody<TSchema extends ZodType>(schema: TSchema, body: unknown): ZodInfer<TSchema> {
+    const result = schema.safeParse(body);
+
+    if (!result.success) {
+      throw new BadRequestError("Invalid request body", result.error.issues);
+    }
+
+    return result.data;
+  }
+
   router.get("/", async (_req, res) => {
     const applications = await prisma.application.findMany({
       orderBy: { createdAt: "desc" },
