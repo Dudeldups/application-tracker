@@ -1,11 +1,20 @@
-import { Button, Card, Grid, Select, Stack, Table, TextInput, Title } from "@mantine/core";
+import {
+  Button,
+  Card,
+  Grid,
+  Select,
+  Stack,
+  Table,
+  TextInput,
+  Title,
+} from "@mantine/core";
 import { Controller, type UseFormReturn } from "react-hook-form";
 
 import { StatusBadge } from "../StatusBadge";
 import { statusOptions } from "../../lib/applicationMeta";
 import { formatDate } from "../../lib/format";
 import type { ApplicationWithRelations } from "../../types/application";
-import type { StatusFormValues } from "./forms";
+import type { StatusFormValues } from "../../lib/schemas/forms";
 
 type StatusChangesSectionProps = {
   application: ApplicationWithRelations;
@@ -39,7 +48,9 @@ export function StatusChangesSection({
                     label="New status"
                     data={statusOptions}
                     value={field.value}
-                    onChange={value => field.onChange(value ?? application.status)}
+                    onChange={value =>
+                      field.onChange(value ?? application.status)
+                    }
                     error={form.formState.errors.status?.message}
                   />
                 )}

@@ -1,9 +1,18 @@
-import { ActionIcon, Button, Card, SimpleGrid, Stack, Text, TextInput, Title } from "@mantine/core";
+import {
+  ActionIcon,
+  Button,
+  Card,
+  SimpleGrid,
+  Stack,
+  Text,
+  TextInput,
+  Title,
+} from "@mantine/core";
 import { IconTrash } from "@tabler/icons-react";
 import type { UseFormReturn } from "react-hook-form";
 
 import type { ApplicationWithRelations } from "../../types/application";
-import type { ContactFormValues } from "./forms";
+import type { ContactFormValues } from "../../lib/schemas/forms";
 
 type ContactsSectionProps = {
   application: ApplicationWithRelations;
@@ -73,7 +82,10 @@ export function ContactsSection({
                       onClick={() =>
                         onDeleteContact(
                           contact.id,
-                          contact.name || contact.email || contact.phone || "contact",
+                          contact.name ||
+                            contact.email ||
+                            contact.phone ||
+                            "contact",
                         )
                       }>
                       <IconTrash size={16} />

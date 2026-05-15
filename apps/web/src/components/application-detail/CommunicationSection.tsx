@@ -15,7 +15,7 @@ import { Controller, type UseFormReturn } from "react-hook-form";
 
 import { formatDateTime } from "../../lib/format";
 import type { ApplicationWithRelations } from "../../types/application";
-import type { CommunicationFormValues } from "./forms";
+import type { CommunicationFormValues } from "../../lib/schemas/forms";
 
 type CommunicationSectionProps = {
   application: ApplicationWithRelations;
@@ -101,7 +101,9 @@ export function CommunicationSection({
                     variant="subtle"
                     color="red"
                     aria-label="Delete communication"
-                    onClick={() => onDeleteCommunication(entry.id, entry.summary)}>
+                    onClick={() =>
+                      onDeleteCommunication(entry.id, entry.summary)
+                    }>
                     <IconTrash size={16} />
                   </ActionIcon>
                 </Group>

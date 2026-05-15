@@ -30,7 +30,7 @@ import {
   type CommunicationFormValues,
   type ContactFormValues,
   type StatusFormValues,
-} from "../components/application-detail/forms";
+} from "../lib/schemas/forms";
 import { toDateTimeLocalInputValue } from "../lib/format";
 import { usePageTitle } from "../lib/usePageTitle";
 import type { ApplicationWithRelations } from "../types/application";
@@ -38,13 +38,15 @@ import type { ApplicationWithRelations } from "../types/application";
 export function ApplicationDetailPage() {
   const { id = "" } = useParams();
   const navigate = useNavigate();
-  const [application, setApplication] = useState<ApplicationWithRelations | null>(null);
+  const [application, setApplication] =
+    useState<ApplicationWithRelations | null>(null);
   usePageTitle(application ? application.companyName : "Application Details");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmittingStatus, setIsSubmittingStatus] = useState(false);
   const [isSubmittingContact, setIsSubmittingContact] = useState(false);
-  const [isSubmittingCommunication, setIsSubmittingCommunication] = useState(false);
+  const [isSubmittingCommunication, setIsSubmittingCommunication] =
+    useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isDeletingContact, setIsDeletingContact] = useState(false);
   const [isDeletingCommunication, setIsDeletingCommunication] = useState(false);
@@ -61,8 +63,10 @@ export function ApplicationDetailPage() {
     id: string;
     label: string;
   } | null>(null);
-  const [isDeleteModalOpen, { open: openDeleteModal, close: closeDeleteModal }] =
-    useDisclosure(false);
+  const [
+    isDeleteModalOpen,
+    { open: openDeleteModal, close: closeDeleteModal },
+  ] = useDisclosure(false);
   const [
     isStatusDeleteModalOpen,
     { open: openStatusDeleteModal, close: closeStatusDeleteModal },
@@ -73,7 +77,10 @@ export function ApplicationDetailPage() {
   ] = useDisclosure(false);
   const [
     isCommunicationDeleteModalOpen,
-    { open: openCommunicationDeleteModal, close: closeCommunicationDeleteModal },
+    {
+      open: openCommunicationDeleteModal,
+      close: closeCommunicationDeleteModal,
+    },
   ] = useDisclosure(false);
 
   const statusForm = useForm<StatusFormValues>({
@@ -149,7 +156,9 @@ export function ApplicationDetailPage() {
       notifications.show({
         color: "red",
         message:
-          submitError instanceof Error ? submitError.message : "Status could not be updated.",
+          submitError instanceof Error
+            ? submitError.message
+            : "Status could not be updated.",
       });
     } finally {
       setIsSubmittingStatus(false);
@@ -171,7 +180,9 @@ export function ApplicationDetailPage() {
       notifications.show({
         color: "red",
         message:
-          submitError instanceof Error ? submitError.message : "Contact could not be saved.",
+          submitError instanceof Error
+            ? submitError.message
+            : "Contact could not be saved.",
       });
     } finally {
       setIsSubmittingContact(false);
@@ -244,7 +255,10 @@ export function ApplicationDetailPage() {
     setIsDeletingStatusEntry(true);
 
     try {
-      const updated = await deleteApplicationStatusHistoryEntry(id, statusEntryToDelete.id);
+      const updated = await deleteApplicationStatusHistoryEntry(
+        id,
+        statusEntryToDelete.id,
+      );
       setApplication(updated);
       statusForm.reset({
         status: updated.status,
@@ -289,7 +303,9 @@ export function ApplicationDetailPage() {
       notifications.show({
         color: "red",
         message:
-          deleteError instanceof Error ? deleteError.message : "Contact could not be deleted.",
+          deleteError instanceof Error
+            ? deleteError.message
+            : "Contact could not be deleted.",
       });
     } finally {
       setIsDeletingContact(false);
