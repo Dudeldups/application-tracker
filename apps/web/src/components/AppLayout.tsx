@@ -44,7 +44,7 @@ export function AppLayout() {
             />
             <Group gap="xs" wrap="nowrap">
               <img
-                src="/favicon.svg"
+                src="/app-icon.svg"
                 alt="Application Tracker logo"
                 width={30}
                 height={30}
