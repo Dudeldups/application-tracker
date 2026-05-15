@@ -42,7 +42,16 @@ export function AppLayout() {
               size="sm"
               aria-label="Toggle navigation"
             />
-            <Title order={3}>Application Tracker</Title>
+            <Group gap="xs" wrap="nowrap">
+              <img
+                src="/favicon.svg"
+                alt="Application Tracker logo"
+                width={30}
+                height={30}
+                style={{ display: "block", flexShrink: 0 }}
+              />
+              <Title order={3}>Application Tracker</Title>
+            </Group>
           </Group>
         </Container>
       </AppShell.Header>
