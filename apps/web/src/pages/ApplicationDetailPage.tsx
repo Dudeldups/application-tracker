@@ -19,6 +19,7 @@ import {
 import { ApplicationDetailHeader } from "../components/application-detail/ApplicationDetailHeader";
 import { ApplicationDetailModals } from "../components/application-detail/ApplicationDetailModals";
 import { ApplicationSummarySection } from "../components/application-detail/ApplicationSummarySection";
+import { ApplicationTimelineSection } from "../components/application-detail/ApplicationTimelineSection";
 import { CommunicationSection } from "../components/application-detail/CommunicationSection";
 import { ContactsSection } from "../components/application-detail/ContactsSection";
 import { StatusChangesSection } from "../components/application-detail/StatusChangesSection";
@@ -376,6 +377,8 @@ export function ApplicationDetailPage() {
       />
 
       <ApplicationSummarySection application={application} />
+
+      <ApplicationTimelineSection application={application} />
 
       <StatusChangesSection
         application={application}
