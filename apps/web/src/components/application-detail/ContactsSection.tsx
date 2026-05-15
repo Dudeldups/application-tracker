@@ -37,6 +37,7 @@ export function ContactsSection({
           <Stack>
             <TextInput
               label="Name"
+              withAsterisk
               {...form.register("name")}
               error={form.formState.errors.name?.message}
             />

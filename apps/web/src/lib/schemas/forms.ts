@@ -10,7 +10,7 @@ export const statusFormSchema = z.object({
 });
 
 export const contactFormSchema = z.object({
-  name: z.string().optional(),
+  name: z.string().trim().min(1, "Name is required."),
   role: z.string().optional(),
   email: z.string().email("Please enter a valid email address.").or(z.literal("")),
   phone: z.string().optional(),
