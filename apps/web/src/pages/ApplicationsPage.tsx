@@ -6,6 +6,7 @@ import {
   Group,
   Loader,
   Select,
+  SimpleGrid,
   Stack,
   Table,
   TableScrollContainer,
@@ -293,6 +294,14 @@ export function ApplicationsPage() {
   });
 
   const sortedApplications = sortApplications(filteredApplications, sortState);
+  const displayedApplicationsCount = sortedApplications.length;
+  const allApplicationsCount = applications.length;
+  const openApplicationsCount = applications.filter(
+    application => !finishedStatuses.includes(application.status),
+  ).length;
+  const overdueFollowUpsCount = filteredApplications.filter(application =>
+    isPastDate(application.followUpAt),
+  ).length;
 
   return (
     <Stack gap="md">
@@ -327,6 +336,35 @@ export function ApplicationsPage() {
           w={240}
         />
       </Group>
+
+      {!isLoading && !error && applications.length > 0 ? (
+        <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }}>
+          <Card withBorder radius="md">
+            <Text size="sm" c="dimmed">
+              Currently displayed
+            </Text>
+            <Title order={3}>{displayedApplicationsCount}</Title>
+          </Card>
+          <Card withBorder radius="md">
+            <Text size="sm" c="dimmed">
+              Open applications
+            </Text>
+            <Title order={3}>{openApplicationsCount}</Title>
+          </Card>
+          <Card withBorder radius="md">
+            <Text size="sm" c="dimmed">
+              All applications
+            </Text>
+            <Title order={3}>{allApplicationsCount}</Title>
+          </Card>
+          <Card withBorder radius="md">
+            <Text size="sm" c="dimmed">
+              Overdue follow-ups
+            </Text>
+            <Title order={3}>{overdueFollowUpsCount}</Title>
+          </Card>
+        </SimpleGrid>
+      ) : null}
 
       {isLoading ? (
         <Group justify="center" p="xl">
