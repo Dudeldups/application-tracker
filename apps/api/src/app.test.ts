@@ -155,6 +155,76 @@ test("POST /api/applications returns 201 and creates the initial status history 
   ]);
 });
 
+test("PATCH /api/applications/:id/status returns 200 and appends a status history entry", async () => {
+  let updateArgs: unknown;
+
+  const prisma = createPrismaMock({
+    application: {
+      update: async (args: unknown) => {
+        updateArgs = args;
+        return {
+          id: "app-1",
+          status: "applied",
+          statusHistory: [
+            {
+              id: "status-2",
+              status: "applied",
+              note: "Sent application",
+            },
+          ],
+          contacts: [],
+          communications: [],
+        };
+      },
+    },
+  });
+  const { baseUrl } = await startTestServer(prisma);
+
+  const response = await fetch(`${baseUrl}/api/applications/app-1/status`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      status: "applied",
+      note: "Sent application",
+    }),
+  });
+  const body = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(updateArgs, {
+    where: { id: "app-1" },
+    data: {
+      status: "applied",
+      statusHistory: {
+        create: {
+          status: "applied",
+          note: "Sent application",
+        },
+      },
+    },
+    include: {
+      contacts: true,
+      statusHistory: {
+        orderBy: { changedAt: "desc" },
+      },
+      communications: {
+        orderBy: { date: "desc" },
+      },
+    },
+  });
+  assert.equal(body.id, "app-1");
+  assert.equal(body.status, "applied");
+  assert.deepEqual(body.statusHistory, [
+    {
+      id: "status-2",
+      status: "applied",
+      note: "Sent application",
+    },
+  ]);
+});
+
 test("GET /api/applications/:id returns 404 when the application does not exist", async () => {
   const prisma = createPrismaMock({
     application: {
