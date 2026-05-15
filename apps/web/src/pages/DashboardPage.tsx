@@ -39,6 +39,12 @@ const pipelineStatuses = new Set<ApplicationStatus>([
   "offer",
 ]);
 
+const interviewStatuses = new Set<ApplicationStatus>([
+  "interview",
+  "technical_task",
+  "offer",
+]);
+
 function isPastDate(value?: string | null) {
   if (!value) {
     return false;
@@ -75,6 +81,36 @@ function hasResponse(application: ApplicationWithRelations) {
   );
 }
 
+function hasReachedInterview(application: ApplicationWithRelations) {
+  return (
+    interviewStatuses.has(application.status) ||
+    application.statusHistory.some(entry => interviewStatuses.has(entry.status))
+  );
+}
+
+function getFirstResponseDate(application: ApplicationWithRelations) {
+  const responseDates = [
+    ...application.statusHistory
+      .filter(entry => responseStatuses.has(entry.status))
+      .map(entry => entry.changedAt),
+    ...application.communications
+      .filter(entry => entry.direction === "incoming")
+      .map(entry => entry.date),
+    application.lastContactAt,
+  ]
+    .filter(Boolean)
+    .map(value => new Date(value!))
+    .filter(date => !Number.isNaN(date.getTime()))
+    .sort((left, right) => left.getTime() - right.getTime());
+
+  return responseDates[0] ?? null;
+}
+
+function getDayDifference(start: Date, end: Date) {
+  const millisecondsPerDay = 1000 * 60 * 60 * 24;
+  return (end.getTime() - start.getTime()) / millisecondsPerDay;
+}
+
 export function DashboardPage() {
   const [applications, setApplications] = useState<ApplicationWithRelations[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -104,9 +140,27 @@ export function DashboardPage() {
     pipelineStatuses.has(application.status),
   );
   const responses = applications.filter(hasResponse);
+  const interviewApplications = applications.filter(hasReachedInterview);
   const appliedThisMonth = applications.filter(application =>
     isInCurrentMonth(application.appliedAt),
   );
+  const responseTimesInDays = applications
+    .map(application => {
+      if (!application.appliedAt) {
+        return null;
+      }
+
+      const appliedAt = new Date(application.appliedAt);
+      const firstResponseDate = getFirstResponseDate(application);
+
+      if (!firstResponseDate || Number.isNaN(appliedAt.getTime())) {
+        return null;
+      }
+
+      const difference = getDayDifference(appliedAt, firstResponseDate);
+      return difference >= 0 ? difference : null;
+    })
+    .filter((value): value is number => value != null);
 
   const statusDistribution = Object.entries(statusMeta)
     .map(([status, meta]) => ({
@@ -138,6 +192,18 @@ export function DashboardPage() {
 
   const responseRate =
     totalApplications === 0 ? 0 : Math.round((responses.length / totalApplications) * 100);
+  const interviewRate =
+    totalApplications === 0
+      ? 0
+      : Math.round((interviewApplications.length / totalApplications) * 100);
+  const averageFirstResponseDays =
+    responseTimesInDays.length === 0
+      ? null
+      : Math.round(
+          (responseTimesInDays.reduce((sum, value) => sum + value, 0) /
+            responseTimesInDays.length) *
+            10,
+        ) / 10;
 
   return (
     <Stack gap="md">
@@ -162,7 +228,7 @@ export function DashboardPage() {
         </Card>
       ) : (
         <>
-          <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }}>
+          <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }}>
             <Card withBorder radius="md">
               <Text size="sm" c="dimmed">
                 All applications
@@ -195,9 +261,23 @@ export function DashboardPage() {
             </Card>
             <Card withBorder radius="md">
               <Text size="sm" c="dimmed">
+                Interview rate
+              </Text>
+              <Title order={2}>{interviewRate}%</Title>
+            </Card>
+            <Card withBorder radius="md">
+              <Text size="sm" c="dimmed">
                 Applied this month
               </Text>
               <Title order={2}>{appliedThisMonth.length}</Title>
+            </Card>
+            <Card withBorder radius="md">
+              <Text size="sm" c="dimmed">
+                Avg. first response
+              </Text>
+              <Title order={2}>
+                {averageFirstResponseDays == null ? "-" : `${averageFirstResponseDays} days`}
+              </Title>
             </Card>
           </SimpleGrid>
 
