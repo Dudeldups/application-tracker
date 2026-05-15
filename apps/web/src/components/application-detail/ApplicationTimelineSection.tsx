@@ -12,20 +12,21 @@ type TimelineItem = {
   badge: string;
   color: string;
   sortPriority: number;
+  hasExplicitTime: boolean;
 };
 
-function hasExplicitTime(value: string) {
-  return value.includes("T");
-}
-
-function getSortTimestamp(value: string, sortPriority: number) {
+function getSortTimestamp(
+  value: string,
+  sortPriority: number,
+  hasExplicitTime: boolean,
+) {
   const parsedDate = new Date(value);
 
   if (Number.isNaN(parsedDate.getTime())) {
     return Number.MAX_SAFE_INTEGER;
   }
 
-  if (hasExplicitTime(value)) {
+  if (hasExplicitTime) {
     return parsedDate.getTime();
   }
 
@@ -34,8 +35,8 @@ function getSortTimestamp(value: string, sortPriority: number) {
   return parsedDate.getTime();
 }
 
-function formatTimelineDate(value: string) {
-  if (!hasExplicitTime(value)) {
+function formatTimelineDate(value: string, hasExplicitTime: boolean) {
+  if (!hasExplicitTime) {
     return formatDate(value);
   }
 
@@ -55,6 +56,7 @@ function createTimelineItems(application: ApplicationWithRelations) {
       badge: "System",
       color: "gray",
       sortPriority: 0,
+      hasExplicitTime: true,
     },
   ];
 
@@ -69,6 +71,7 @@ function createTimelineItems(application: ApplicationWithRelations) {
       badge: "Milestone",
       color: "blue",
       sortPriority: 1,
+      hasExplicitTime: false,
     });
   }
 
@@ -81,6 +84,7 @@ function createTimelineItems(application: ApplicationWithRelations) {
       badge: "Milestone",
       color: "cyan",
       sortPriority: 2,
+      hasExplicitTime: false,
     });
   }
 
@@ -93,6 +97,7 @@ function createTimelineItems(application: ApplicationWithRelations) {
       badge: "Contact",
       color: "teal",
       sortPriority: 5,
+      hasExplicitTime: false,
     });
   }
 
@@ -105,6 +110,7 @@ function createTimelineItems(application: ApplicationWithRelations) {
       badge: "Follow-up",
       color: "orange",
       sortPriority: 6,
+      hasExplicitTime: false,
     });
   }
 
@@ -119,6 +125,7 @@ function createTimelineItems(application: ApplicationWithRelations) {
       badge: "Status",
       color: statusMeta[entry.status].color,
       sortPriority: 3,
+      hasExplicitTime: true,
     });
   });
 
@@ -131,13 +138,14 @@ function createTimelineItems(application: ApplicationWithRelations) {
       badge: "Communication",
       color: entry.direction === "incoming" ? "teal" : "grape",
       sortPriority: 4,
+      hasExplicitTime: false,
     });
   });
 
   return items.sort((left, right) => {
     const dateDifference =
-      getSortTimestamp(left.date, left.sortPriority) -
-      getSortTimestamp(right.date, right.sortPriority);
+      getSortTimestamp(left.date, left.sortPriority, left.hasExplicitTime) -
+      getSortTimestamp(right.date, right.sortPriority, right.hasExplicitTime);
 
     if (dateDifference !== 0) {
       return dateDifference;
@@ -171,7 +179,7 @@ export function ApplicationTimelineSection({
         <Stack gap="sm">
           {items.map((item, index) => (
             <Group key={item.id} align="start" gap="md" wrap="nowrap">
-              <Stack gap={0} align="center">
+              <Stack gap={0} align="center" w={116} miw={116}>
                 <Badge color={item.color} variant="light">
                   {item.badge}
                 </Badge>
@@ -187,7 +195,7 @@ export function ApplicationTimelineSection({
                   <Group justify="space-between" align="start">
                     <Text fw={600}>{item.label}</Text>
                     <Text size="sm" c="dimmed">
-                      {formatTimelineDate(item.date)}
+                      {formatTimelineDate(item.date, item.hasExplicitTime)}
                     </Text>
                   </Group>
                   <Text size="sm">{item.description}</Text>
