@@ -74,6 +74,8 @@ export const updateStatusSchema = z.object({
   note: z.string().optional(),
 });
 
+export type ApplicationStatusInput = z.infer<typeof updateStatusSchema>;
+
 export const createCommunicationSchema = z.object({
   type: z.string().trim().min(1, "type is required"),
   direction: z.string().trim().min(1, "direction is required"),

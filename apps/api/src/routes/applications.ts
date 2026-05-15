@@ -1,75 +1,28 @@
 import { Router } from "express";
-import { type ZodType, type infer as ZodInfer } from "zod";
 import { PrismaClient } from "../generated/prisma/client.js";
 import {
   createApplicationSchema,
   createCommunicationSchema,
   createContactSchema,
   updateApplicationSchema,
-  type ApplicationInput,
   updateStatusSchema,
 } from "../schemas/applicationSchemas.js";
 import { emptyStringToUndefined, omitUndefined } from "../lib/object.js";
-import { BadRequestError, NotFoundError, mapPrismaError } from "../lib/errors.js";
+import { NotFoundError, mapPrismaError } from "../lib/errors.js";
+import {
+  applicationDetailInclude,
+  buildApplicationData,
+} from "../lib/application-data.js";
+import { parseBody } from "../lib/validation.js";
+import {
+  deleteStatusHistoryEntry,
+  getApplicationOrThrow,
+  updateApplicationStatus,
+  updateApplicationWithStatusHistory,
+} from "../services/application-service.js";
 
 export function createApplicationsRouter(prisma: PrismaClient) {
   const router = Router();
-  type ApplicationDataInput = {
-    [K in keyof ApplicationInput]?: ApplicationInput[K] | undefined;
-  };
-
-  const applicationDetailInclude = {
-    contacts: true,
-    statusHistory: {
-      orderBy: { changedAt: "desc" },
-    },
-    communications: {
-      orderBy: { date: "desc" },
-    },
-  } as const;
-
-  function buildApplicationData(data: ApplicationDataInput) {
-    return omitUndefined({
-      companyName: data.companyName,
-      jobTitle: data.jobTitle,
-      city: emptyStringToUndefined(data.city),
-      address: emptyStringToUndefined(data.address),
-      remoteType: data.remoteType,
-
-      source: emptyStringToUndefined(data.source),
-      jobUrl: emptyStringToUndefined(data.jobUrl),
-
-      status: data.status,
-
-      foundAt: data.foundAt ? new Date(data.foundAt) : undefined,
-      appliedAt: data.appliedAt ? new Date(data.appliedAt) : undefined,
-      lastContactAt: data.lastContactAt ? new Date(data.lastContactAt) : undefined,
-      followUpAt: data.followUpAt ? new Date(data.followUpAt) : undefined,
-
-      jobAdText: data.jobAdText,
-
-      cvVersion: emptyStringToUndefined(data.cvVersion),
-      coverLetterVersion: emptyStringToUndefined(data.coverLetterVersion),
-      usedCoverLetter: data.usedCoverLetter,
-
-      customizationNotes: data.customizationNotes,
-      notes: data.notes,
-
-      interestRating: data.interestRating,
-      skillFitRating: data.skillFitRating,
-      priorityRating: data.priorityRating,
-    });
-  }
-
-  function parseBody<TSchema extends ZodType>(schema: TSchema, body: unknown): ZodInfer<TSchema> {
-    const result = schema.safeParse(body);
-
-    if (!result.success) {
-      throw new BadRequestError("Invalid request body", result.error.issues);
-    }
-
-    return result.data;
-  }
 
   router.get("/", async (_req, res) => {
     const applications = await prisma.application.findMany({
@@ -103,49 +56,17 @@ export function createApplicationsRouter(prisma: PrismaClient) {
   });
 
   router.get("/:id", async (req, res) => {
-    const application = await prisma.application.findUnique({
-      where: { id: req.params.id },
-      include: applicationDetailInclude,
-    });
-
-    if (!application) {
-      throw new NotFoundError("Application not found");
-    }
-
+    const application = await getApplicationOrThrow(prisma, req.params.id);
     res.json(application);
   });
 
   router.patch("/:id", async (req, res) => {
     const data = parseBody(updateApplicationSchema, req.body);
-    const existingApplication = await prisma.application.findUnique({
-      where: { id: req.params.id },
-      select: { status: true },
-    });
-
-    if (!existingApplication) {
-      throw new NotFoundError("Application not found");
-    }
-
-    const isStatusChange =
-      data.status !== undefined && data.status !== existingApplication.status;
-
-    const application = await prisma.application.update({
-      where: { id: req.params.id },
-      data: {
-        ...buildApplicationData(data),
-        ...(isStatusChange
-          ? {
-              statusHistory: {
-                create: {
-                  status: data.status!,
-                },
-              },
-            }
-          : {}),
-      },
-      include: applicationDetailInclude,
-    });
-
+    const application = await updateApplicationWithStatusHistory(
+      prisma,
+      req.params.id,
+      data,
+    );
     res.json(application);
   });
 
@@ -162,23 +83,10 @@ export function createApplicationsRouter(prisma: PrismaClient) {
   });
 
   router.patch("/:id/status", async (req, res) => {
-    const { status, note } = parseBody(updateStatusSchema, req.body);
+    const input = parseBody(updateStatusSchema, req.body);
 
     try {
-      const application = await prisma.application.update({
-        where: { id: req.params.id },
-        data: {
-          status,
-          statusHistory: {
-            create: omitUndefined({
-              status,
-              note,
-            }),
-          },
-        },
-        include: applicationDetailInclude,
-      });
-
+      const application = await updateApplicationStatus(prisma, req.params.id, input);
       res.json(application);
     } catch (error) {
       throw mapPrismaError(error, { P2025: "Application not found" });
@@ -187,62 +95,11 @@ export function createApplicationsRouter(prisma: PrismaClient) {
 
   router.delete("/:id/status-history/:statusHistoryId", async (req, res) => {
     const { id, statusHistoryId } = req.params;
-
-    const application = await prisma.application.findUnique({
-      where: { id },
-      include: {
-        statusHistory: {
-          orderBy: { changedAt: "asc" },
-        },
-      },
-    });
-
-    if (!application) {
-      throw new NotFoundError("Application not found");
-    }
-
-    const targetEntry = application.statusHistory.find(
-      entry => entry.id === statusHistoryId,
+    const updatedApplication = await deleteStatusHistoryEntry(
+      prisma,
+      id,
+      statusHistoryId,
     );
-
-    if (!targetEntry) {
-      throw new NotFoundError("Status entry not found");
-    }
-
-    const initialEntry = application.statusHistory[0];
-
-    if (!initialEntry || initialEntry.id === statusHistoryId) {
-      throw new BadRequestError("Initial status cannot be deleted");
-    }
-
-    const remainingEntries = application.statusHistory.filter(
-      entry => entry.id !== statusHistoryId,
-    );
-    const latestRemainingEntry = remainingEntries[remainingEntries.length - 1];
-
-    if (!latestRemainingEntry) {
-      throw new BadRequestError(
-        "Application must keep at least one status entry",
-      );
-    }
-
-    await prisma.$transaction([
-      prisma.statusHistory.delete({
-        where: { id: statusHistoryId },
-      }),
-      prisma.application.update({
-        where: { id },
-        data: {
-          status: latestRemainingEntry.status,
-        },
-      }),
-    ]);
-
-    const updatedApplication = await prisma.application.findUnique({
-      where: { id },
-      include: applicationDetailInclude,
-    });
-
     res.json(updatedApplication);
   });
 
