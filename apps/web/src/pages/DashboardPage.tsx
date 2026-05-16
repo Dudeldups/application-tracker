@@ -8,6 +8,7 @@ import {
   SimpleGrid,
   Stack,
   Table,
+  TableScrollContainer,
   Text,
   Title,
 } from "@mantine/core";
@@ -306,22 +307,24 @@ export function DashboardPage() {
                   </Text>
                 </div>
 
-                <Table striped highlightOnHover>
-                  <Table.Thead>
-                    <Table.Tr>
-                      <Table.Th>Source</Table.Th>
-                      <Table.Th>Applications</Table.Th>
-                    </Table.Tr>
-                  </Table.Thead>
-                  <Table.Tbody>
-                    {sourceDistribution.map(entry => (
-                      <Table.Tr key={entry.source}>
-                        <Table.Td>{entry.source}</Table.Td>
-                        <Table.Td>{entry.count}</Table.Td>
+                <TableScrollContainer minWidth={360}>
+                  <Table striped highlightOnHover>
+                    <Table.Thead>
+                      <Table.Tr>
+                        <Table.Th>Source</Table.Th>
+                        <Table.Th>Applications</Table.Th>
                       </Table.Tr>
-                    ))}
-                  </Table.Tbody>
-                </Table>
+                    </Table.Thead>
+                    <Table.Tbody>
+                      {sourceDistribution.map(entry => (
+                        <Table.Tr key={entry.source}>
+                          <Table.Td>{entry.source}</Table.Td>
+                          <Table.Td>{entry.count}</Table.Td>
+                        </Table.Tr>
+                      ))}
+                    </Table.Tbody>
+                  </Table>
+                </TableScrollContainer>
               </Stack>
             </Card>
           </SimpleGrid>
@@ -338,37 +341,39 @@ export function DashboardPage() {
               {followUps.length === 0 ? (
                 <Text c="dimmed">No follow-ups planned right now.</Text>
               ) : (
-                <Table striped highlightOnHover>
-                  <Table.Thead>
-                    <Table.Tr>
-                      <Table.Th>Company</Table.Th>
-                      <Table.Th>Position</Table.Th>
-                      <Table.Th>Status</Table.Th>
-                      <Table.Th>Follow-up</Table.Th>
-                    </Table.Tr>
-                  </Table.Thead>
-                  <Table.Tbody>
-                    {followUps.map(application => (
-                      <Table.Tr key={application.id}>
-                        <Table.Td>
-                          <Anchor component={Link} to={`/applications/${application.id}`}>
-                            {application.companyName}
-                          </Anchor>
-                        </Table.Td>
-                        <Table.Td>{application.jobTitle}</Table.Td>
-                        <Table.Td>{statusMeta[application.status].label}</Table.Td>
-                        <Table.Td
-                          c={
-                            isPastCalendarDate(application.followUpAt)
-                              ? "red.4"
-                              : undefined
-                          }>
-                          {formatCalendarDate(application.followUpAt)}
-                        </Table.Td>
+                <TableScrollContainer minWidth={560}>
+                  <Table striped highlightOnHover>
+                    <Table.Thead>
+                      <Table.Tr>
+                        <Table.Th>Company</Table.Th>
+                        <Table.Th>Position</Table.Th>
+                        <Table.Th>Status</Table.Th>
+                        <Table.Th>Follow-up</Table.Th>
                       </Table.Tr>
-                    ))}
-                  </Table.Tbody>
-                </Table>
+                    </Table.Thead>
+                    <Table.Tbody>
+                      {followUps.map(application => (
+                        <Table.Tr key={application.id}>
+                          <Table.Td>
+                            <Anchor component={Link} to={`/applications/${application.id}`}>
+                              {application.companyName}
+                            </Anchor>
+                          </Table.Td>
+                          <Table.Td>{application.jobTitle}</Table.Td>
+                          <Table.Td>{statusMeta[application.status].label}</Table.Td>
+                          <Table.Td
+                            c={
+                              isPastCalendarDate(application.followUpAt)
+                                ? "red.4"
+                                : undefined
+                            }>
+                            {formatCalendarDate(application.followUpAt)}
+                          </Table.Td>
+                        </Table.Tr>
+                      ))}
+                    </Table.Tbody>
+                  </Table>
+                </TableScrollContainer>
               )}
             </Stack>
           </Card>
