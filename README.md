@@ -1,6 +1,6 @@
 # Application Tracker
 
-<!-- Live Site: https:// -->
+Live Site: <https://applications.dudeldups.dev>
 
 Application Tracker is a full-stack web application for organizing and tracking applications in one place. It combines a React frontend with an Express API and a PostgreSQL database managed through Prisma.
 
