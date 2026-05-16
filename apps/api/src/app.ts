@@ -8,6 +8,7 @@ import { HttpError } from "./lib/errors.js";
 
 type AppOptions = {
   corsOrigins: string[];
+  demoMode: boolean;
   staticDir?: string | undefined;
 };
 
@@ -17,7 +18,7 @@ export function createApp(prisma: PrismaClient, options: AppOptions) {
   app.use(cors({ origin: options.corsOrigins }));
   app.use(express.json());
 
-  app.use("/api/health", createHealthRouter());
+  app.use("/api/health", createHealthRouter({ demoMode: options.demoMode }));
   app.use("/api/applications", createApplicationsRouter(prisma));
 
   if (options.staticDir) {

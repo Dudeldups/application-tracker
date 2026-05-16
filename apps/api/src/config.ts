@@ -5,6 +5,16 @@ dotenv.config();
 
 const envSchema = z.object({
   DATABASE_URL: z.url("DATABASE_URL must be a valid database connection URL."),
+  DEMO_MODE: z
+    .string()
+    .optional()
+    .transform(value => {
+      if (!value) {
+        return false;
+      }
+
+      return ["1", "true", "yes", "on"].includes(value.toLowerCase());
+    }),
   PORT: z
     .string()
     .optional()
@@ -39,6 +49,7 @@ const env = envSchema.parse(process.env);
 
 export const config = {
   databaseUrl: env.DATABASE_URL,
+  demoMode: env.DEMO_MODE,
   port: env.PORT,
   corsOrigins: env.CORS_ORIGIN,
   staticDir: env.STATIC_DIR,

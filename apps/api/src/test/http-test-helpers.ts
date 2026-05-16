@@ -31,6 +31,7 @@ afterEach(async () => {
 export async function startTestServer(prisma: PrismaClient) {
   const app = createApp(prisma, {
     corsOrigins: ["http://localhost:5173"],
+    demoMode: false,
   });
   const server = app.listen(0);
   openServers.add(server);

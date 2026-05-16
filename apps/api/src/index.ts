@@ -10,6 +10,7 @@ const adapter = new PrismaPg({
 const prisma = new PrismaClient({ adapter });
 const app = createApp(prisma, {
   corsOrigins: config.corsOrigins,
+  demoMode: config.demoMode,
   staticDir: config.staticDir,
 });
 

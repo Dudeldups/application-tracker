@@ -13,7 +13,7 @@ test("GET /api/health returns ok", async () => {
   const body = await response.json();
 
   assert.equal(response.status, 200);
-  assert.deepEqual(body, { ok: true });
+  assert.deepEqual(body, { ok: true, mode: "live" });
 });
 
 test("GET /api/applications returns 500 for unexpected errors", async () => {
