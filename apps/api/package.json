@@ -7,6 +7,8 @@
     "dev": "tsx watch ./src/index.ts",
     "build": "prisma generate && tsc",
     "test": "tsx --test ./src/**/*.test.ts",
+    "demo:reset": "tsx ./src/scripts/demo-reset.ts",
+    "demo:reset:prod": "node dist/scripts/demo-reset.js",
     "start": "node dist/index.js",
     "db:migrate": "prisma migrate deploy",
     "db:migrate:dev": "prisma migrate dev",
