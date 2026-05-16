@@ -3,6 +3,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        VITE_DEMO_MODE: ${VITE_DEMO_MODE:-0}
     depends_on:
       postgres:
         condition: service_healthy
@@ -10,6 +12,7 @@ services:
       NODE_ENV: production
       PORT: 3000
       STATIC_DIR: /app/public
+      DEMO_MODE: ${DEMO_MODE:-0}
       DATABASE_URL: postgresql://app_user:app_password@postgres:5432/application_tracker?schema=public
     ports:
       - "3000:3000"
