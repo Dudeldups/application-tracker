@@ -6,8 +6,9 @@ import type {
   ApplicationWithRelations,
 } from "../types/application";
 import { ApiRequestError } from "../lib/errors";
+import { config } from "../config";
 
-const apiUrl = import.meta.env.VITE_API_URL ?? "";
+const apiUrl = config.apiUrl;
 
 type ApiErrorPayload = {
   error?: string;

@@ -1,7 +1,17 @@
-import { AppShell, Burger, Container, Group, NavLink, Title } from "@mantine/core";
+import {
+  AppShell,
+  Burger,
+  Container,
+  Group,
+  NavLink,
+  Stack,
+  Text,
+  Title,
+} from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { IconBriefcase, IconLayoutDashboard, IconPlus } from "@tabler/icons-react";
 import { Link, Outlet, useLocation } from "react-router";
+import { config } from "../config";
 
 export function AppLayout() {
   const location = useLocation();
@@ -9,7 +19,7 @@ export function AppLayout() {
 
   return (
     <AppShell
-      header={{ height: 64 }}
+      header={{ height: 82 }}
       navbar={{
         width: 260,
         breakpoint: "sm",
@@ -42,15 +52,23 @@ export function AppLayout() {
               size="sm"
               aria-label="Toggle navigation"
             />
-            <Group gap="xs" wrap="nowrap">
+            <Group gap="xs" wrap="nowrap" align="flex-start">
               <img
                 src="/app-icon.svg"
                 alt="Application Tracker logo"
                 width={30}
                 height={30}
-                style={{ display: "block", flexShrink: 0 }}
+                style={{ display: "block", flexShrink: 0, marginTop: 4 }}
               />
-              <Title order={3}>Application Tracker</Title>
+              <Stack gap={2}>
+                <Title order={3}>Application Tracker</Title>
+                {config.demoMode ? (
+                  <Text size="sm" c="yellow.2">
+                    Demo mode: data resets periodically. Please don&apos;t input
+                    real data here.
+                  </Text>
+                ) : null}
+              </Stack>
             </Group>
           </Group>
         </Container>
