@@ -400,6 +400,140 @@ export function createDemoApplicationsSeed(): Prisma.ApplicationCreateInput[] {
         ],
       },
     },
+    {
+      companyName: "Maple Fintech",
+      jobTitle: "Product Frontend Engineer",
+      city: "Stuttgart",
+      remoteType: "hybrid",
+      source: "LinkedIn",
+      jobUrl: "https://example.com/jobs/maple-fintech-product-frontend-engineer",
+      status: "confirmation_received",
+      foundAt: daysAgo(2, 8, 45),
+      appliedAt: daysAgo(1, 9, 20),
+      lastContactAt: daysAgo(1, 13, 10),
+      followUpAt: daysAgo(1, 17, 0),
+      cvVersion: "Frontend v5",
+      coverLetterVersion: "Fintech product angle",
+      usedCoverLetter: true,
+      customizationNotes:
+        "Focused on product iteration speed, data-heavy UI, and collaboration with design.",
+      notes:
+        "Confirmation email came in the same day. Follow-up is intentionally set for that day to showcase overdue reminders.",
+      interestRating: 4,
+      skillFitRating: 4,
+      priorityRating: 4,
+      contacts: {
+        create: [
+          {
+            name: "Nina Baumann",
+            role: "Recruiting Specialist",
+            email: "nina.baumann@maplefintech.example",
+          },
+        ],
+      },
+      statusHistory: {
+        create: [
+          {
+            status: "interesting",
+            changedAt: daysAgo(2, 8, 45),
+            note: "Saved after spotting the role on LinkedIn.",
+          },
+          {
+            status: "applied",
+            changedAt: daysAgo(1, 9, 20),
+            note: "Applied with a tailored frontend portfolio.",
+          },
+          {
+            status: "confirmation_received",
+            changedAt: daysAgo(1, 13, 10),
+            note: "Automatic confirmation received from the hiring team.",
+          },
+        ],
+      },
+      communications: {
+        create: [
+          {
+            date: daysAgo(1, 9, 20),
+            type: "application",
+            direction: "outbound",
+            summary: "Submitted application through the careers portal.",
+          },
+          {
+            date: daysAgo(1, 13, 10),
+            type: "email",
+            direction: "inbound",
+            summary: "Application confirmation received.",
+            body: "The team confirmed receipt and said they would review applications this week.",
+          },
+        ],
+      },
+    },
+    {
+      companyName: "Summit Cloud",
+      jobTitle: "Frontend Platform Engineer",
+      city: "Leipzig",
+      remoteType: "remote",
+      source: "Company website",
+      jobUrl: "https://example.com/jobs/summit-cloud-frontend-platform-engineer",
+      status: "no_response",
+      foundAt: daysAgo(12, 18, 10),
+      appliedAt: daysAgo(10, 10, 0),
+      lastContactAt: daysAgo(10, 10, 0),
+      followUpAt: daysAgo(1, 11, 30),
+      cvVersion: "Platform v2",
+      usedCoverLetter: false,
+      customizationNotes:
+        "Highlighted React infrastructure work, shared tooling, and developer experience improvements.",
+      notes:
+        "No reply so far. Follow-up date is yesterday so the dashboard can surface an overdue item in demo mode.",
+      interestRating: 4,
+      skillFitRating: 3,
+      priorityRating: 3,
+      contacts: {
+        create: [
+          {
+            name: "Tobias Lang",
+            role: "People Partner",
+            email: "tobias.lang@summitcloud.example",
+          },
+        ],
+      },
+      statusHistory: {
+        create: [
+          {
+            status: "interesting",
+            changedAt: daysAgo(12, 18, 10),
+            note: "Saved from the company careers page.",
+          },
+          {
+            status: "applied",
+            changedAt: daysAgo(10, 10, 0),
+            note: "Applied with resume and selected project links.",
+          },
+          {
+            status: "no_response",
+            changedAt: daysAgo(1, 11, 30),
+            note: "Marked as no response after the follow-up window passed.",
+          },
+        ],
+      },
+      communications: {
+        create: [
+          {
+            date: daysAgo(10, 10, 0),
+            type: "application",
+            direction: "outbound",
+            summary: "Submitted application through the company website.",
+          },
+          {
+            date: daysAgo(1, 11, 30),
+            type: "note",
+            direction: "outbound",
+            summary: "Follow-up reminder became overdue with no answer yet.",
+          },
+        ],
+      },
+    },
   ];
 }
 

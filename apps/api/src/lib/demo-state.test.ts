@@ -2,10 +2,10 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createDemoApplicationsSeed } from "./demo-state.js";
 
-test("createDemoApplicationsSeed returns six demo applications with varied statuses", () => {
+test("createDemoApplicationsSeed returns eight demo applications with varied statuses", () => {
   const applications = createDemoApplicationsSeed();
 
-  assert.equal(applications.length, 6);
+  assert.equal(applications.length, 8);
 
   const statuses = new Set(applications.map(application => application.status));
 
@@ -15,9 +15,11 @@ test("createDemoApplicationsSeed returns six demo applications with varied statu
       "interesting",
       "applied",
       "interview",
+      "confirmation_received",
       "technical_task",
       "offer",
       "rejected",
+      "no_response",
     ]),
   );
 });
