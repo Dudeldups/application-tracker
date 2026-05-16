@@ -19,7 +19,7 @@ export function AppLayout() {
 
   return (
     <AppShell
-      header={{ height: 82 }}
+      header={{ height: { base: 112, sm: 82 } }}
       navbar={{
         width: 260,
         breakpoint: "sm",
@@ -43,7 +43,8 @@ export function AppLayout() {
         <Container
           size="xl"
           px={{ base: "xs", sm: "md" }}
-          className="flex h-full items-center justify-between">
+          py="xs"
+          className="flex min-h-full items-start justify-between">
           <Group gap="sm">
             <Burger
               opened={opened}
