@@ -1,10 +1,10 @@
 import {
   AppShell,
+  Card,
   Burger,
   Container,
   Group,
   NavLink,
-  Stack,
   Text,
   Title,
 } from "@mantine/core";
@@ -19,7 +19,7 @@ export function AppLayout() {
 
   return (
     <AppShell
-      header={{ height: { base: 112, sm: 82 } }}
+      header={{ height: 64 }}
       navbar={{
         width: 260,
         breakpoint: "sm",
@@ -43,8 +43,7 @@ export function AppLayout() {
         <Container
           size="xl"
           px={{ base: "xs", sm: "md" }}
-          py="xs"
-          className="flex min-h-full items-start justify-between">
+          className="flex h-full items-center justify-between">
           <Group gap="sm">
             <Burger
               opened={opened}
@@ -53,23 +52,15 @@ export function AppLayout() {
               size="sm"
               aria-label="Toggle navigation"
             />
-            <Group gap="xs" wrap="nowrap" align="flex-start">
+            <Group gap="xs" wrap="nowrap">
               <img
                 src="/app-icon.svg"
                 alt="Application Tracker logo"
                 width={30}
                 height={30}
-                style={{ display: "block", flexShrink: 0, marginTop: 4 }}
+                style={{ display: "block", flexShrink: 0 }}
               />
-              <Stack gap={2}>
-                <Title order={3}>Application Tracker</Title>
-                {config.demoMode ? (
-                  <Text size="sm" c="yellow.2">
-                    Demo mode: data resets periodically. Please don&apos;t input
-                    real data here.
-                  </Text>
-                ) : null}
-              </Stack>
+              <Title order={3}>Application Tracker</Title>
             </Group>
           </Group>
         </Container>
@@ -106,6 +97,14 @@ export function AppLayout() {
 
       <AppShell.Main>
         <Container size="xl" px={{ base: "xs", sm: "md" }}>
+          {config.demoMode ? (
+            <Card withBorder radius="md" mb="md" p="sm">
+              <Text size="sm" c="yellow.2">
+                Demo mode: data resets periodically. Please don&apos;t input real
+                data here.
+              </Text>
+            </Card>
+          ) : null}
           <Outlet />
         </Container>
       </AppShell.Main>
