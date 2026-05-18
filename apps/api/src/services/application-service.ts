@@ -13,7 +13,7 @@ function shouldAutoSetAppliedAt(
   nextStatus: string | undefined,
   previousStatus: string,
   existingAppliedAt: Date | null | undefined,
-  nextAppliedAt: Date | undefined,
+  nextAppliedAt: string | undefined,
 ) {
   return (
     nextStatus === "applied" &&
