@@ -7,6 +7,7 @@ import {
   deleteApplicationContact,
   deleteApplicationCommunication,
   deleteStatusHistoryEntry,
+  updateApplicationStatus,
   updateApplicationWithStatusHistory,
 } from "./application-service.js";
 import { BadRequestError, NotFoundError } from "../lib/errors.js";
@@ -20,7 +21,7 @@ test("updateApplicationWithStatusHistory adds a history entry when status change
 
   const prisma = createPrismaMock({
     application: {
-      findUnique: async () => ({ status: "interesting" }),
+      findUnique: async () => ({ status: "interesting", appliedAt: null }),
       update: async (args: unknown) => {
         updateArgs = args;
         return { id: "app-1" };
@@ -38,6 +39,7 @@ test("updateApplicationWithStatusHistory adds a history entry when status change
     data: {
       companyName: "ACME",
       status: "applied",
+      appliedAt: (updateArgs as { data: { appliedAt: Date } }).data.appliedAt,
       statusHistory: {
         create: {
           status: "applied",
@@ -54,6 +56,10 @@ test("updateApplicationWithStatusHistory adds a history entry when status change
       },
     },
   });
+  assert.ok(
+    (updateArgs as { data: { appliedAt: unknown } }).data.appliedAt instanceof
+      Date,
+  );
 });
 
 test("updateApplicationWithStatusHistory does not add history when status stays the same", async () => {
@@ -61,7 +67,10 @@ test("updateApplicationWithStatusHistory does not add history when status stays 
 
   const prisma = createPrismaMock({
     application: {
-      findUnique: async () => ({ status: "applied" }),
+      findUnique: async () => ({
+        status: "applied",
+        appliedAt: new Date("2026-05-10T00:00:00.000Z"),
+      }),
       update: async (args: unknown) => {
         updateArgs = args;
         return { id: "app-1" };
@@ -90,6 +99,52 @@ test("updateApplicationWithStatusHistory does not add history when status stays 
       },
     },
   });
+});
+
+test("updateApplicationStatus sets appliedAt when status changes to applied for the first time", async () => {
+  let updateArgs: unknown;
+
+  const prisma = createPrismaMock({
+    application: {
+      findUnique: async () => ({ status: "interesting", appliedAt: null }),
+      update: async (args: unknown) => {
+        updateArgs = args;
+        return { id: "app-1" };
+      },
+    },
+  });
+
+  await updateApplicationStatus(prisma, "app-1", {
+    status: "applied",
+    note: "Sent application",
+  });
+
+  assert.deepEqual(updateArgs, {
+    where: { id: "app-1" },
+    data: {
+      status: "applied",
+      appliedAt: (updateArgs as { data: { appliedAt: Date } }).data.appliedAt,
+      statusHistory: {
+        create: {
+          status: "applied",
+          note: "Sent application",
+        },
+      },
+    },
+    include: {
+      contacts: true,
+      statusHistory: {
+        orderBy: { changedAt: "desc" },
+      },
+      communications: {
+        orderBy: { date: "desc" },
+      },
+    },
+  });
+  assert.ok(
+    (updateArgs as { data: { appliedAt: unknown } }).data.appliedAt instanceof
+      Date,
+  );
 });
 
 test("deleteStatusHistoryEntry rejects deleting the initial status", async () => {

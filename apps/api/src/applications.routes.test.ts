@@ -105,6 +105,7 @@ test("PATCH /api/applications/:id/status returns 200 and appends a status histor
 
   const prisma = createPrismaMock({
     application: {
+      findUnique: async () => ({ status: "interesting", appliedAt: null }),
       update: async (args: unknown) => {
         updateArgs = args;
         return {
@@ -142,6 +143,7 @@ test("PATCH /api/applications/:id/status returns 200 and appends a status histor
     where: { id: "app-1" },
     data: {
       status: "applied",
+      appliedAt: (updateArgs as { data: { appliedAt: Date } }).data.appliedAt,
       statusHistory: {
         create: {
           status: "applied",
@@ -159,6 +161,10 @@ test("PATCH /api/applications/:id/status returns 200 and appends a status histor
       },
     },
   });
+  assert.ok(
+    (updateArgs as { data: { appliedAt: unknown } }).data.appliedAt instanceof
+      Date,
+  );
   assert.equal(body.id, "app-1");
   assert.equal(body.status, "applied");
   assert.deepEqual(body.statusHistory, [
@@ -181,7 +187,7 @@ test("PATCH /api/applications/:id returns 200 and appends status history when th
           args !== null &&
           "select" in args
         ) {
-          return { status: "interesting" };
+          return { status: "interesting", appliedAt: null };
         }
 
         return null;
@@ -227,6 +233,7 @@ test("PATCH /api/applications/:id returns 200 and appends status history when th
       companyName: "ACME",
       jobTitle: "Backend Engineer",
       status: "applied",
+      appliedAt: (updateArgs as { data: { appliedAt: Date } }).data.appliedAt,
       statusHistory: {
         create: {
           status: "applied",
@@ -243,6 +250,10 @@ test("PATCH /api/applications/:id returns 200 and appends status history when th
       },
     },
   });
+  assert.ok(
+    (updateArgs as { data: { appliedAt: unknown } }).data.appliedAt instanceof
+      Date,
+  );
   assert.equal(body.id, "app-1");
   assert.equal(body.status, "applied");
 });
@@ -258,7 +269,10 @@ test("PATCH /api/applications/:id returns 200 without appending status history w
           args !== null &&
           "select" in args
         ) {
-          return { status: "applied" };
+          return {
+            status: "applied",
+            appliedAt: new Date("2026-05-10T00:00:00.000Z"),
+          };
         }
 
         return null;
