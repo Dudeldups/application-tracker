@@ -13,7 +13,7 @@ import {
   TextInput,
 } from "@mantine/core";
 import { useEffect, useRef } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 
 import { remoteTypeOptions, statusOptions } from "../lib/applicationMeta";
 import { type ApplicationWithRelations } from "../types/application";
@@ -58,8 +58,10 @@ export function ApplicationForm({
     defaultValues: buildApplicationFormValues(initialValues),
   });
   const previousStatusRef = useRef(form.getValues("status"));
-  const status = form.watch("status");
-  const appliedAt = form.watch("appliedAt");
+  const [status, appliedAt] = useWatch({
+    control: form.control,
+    name: ["status", "appliedAt"],
+  });
 
   useEffect(() => {
     if (
