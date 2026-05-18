@@ -34,7 +34,11 @@ export function NewApplicationPage() {
     setIsSubmitting(true);
 
     try {
-      const application = await createApplication(toApplicationPayload(values));
+      const payload = toApplicationPayload(values);
+      const application = await createApplication({
+        ...payload,
+        foundAt: payload.foundAt ?? initialValues.foundAt,
+      });
 
       notifications.show({
         color: "green",

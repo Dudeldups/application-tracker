@@ -67,6 +67,12 @@ const submittedValues: ApplicationFormValues = {
   priorityRating: 3,
 };
 
+const submittedValuesWithoutFoundAt: ApplicationFormValues = {
+  ...submittedValues,
+  foundAt: "",
+};
+let currentSubmittedValues = submittedValues;
+
 vi.mock("../components/ApplicationForm", () => ({
   ApplicationForm: ({
     initialValues,
@@ -84,7 +90,7 @@ vi.mock("../components/ApplicationForm", () => ({
       <div>{`submitting: ${String(Boolean(isSubmitting))}`}</div>
       <div>{`found-at: ${initialValues?.foundAt ?? ""}`}</div>
       <button
-        onClick={() => void onSubmit(submittedValues)}
+        onClick={() => void onSubmit(currentSubmittedValues)}
         type="button">
         Trigger submit
       </button>
@@ -95,6 +101,7 @@ vi.mock("../components/ApplicationForm", () => ({
 describe("NewApplicationPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    currentSubmittedValues = submittedValues;
   });
 
   it("creates an application with the normalized payload and navigates to the detail page", async () => {
@@ -142,6 +149,30 @@ describe("NewApplicationPage", () => {
       }),
     );
     expect(navigateMock).toHaveBeenCalledWith("/applications/app-42");
+  });
+
+  it("falls back to the route's current date when Found at is missing on submit", async () => {
+    vi.mocked(createApplication).mockResolvedValue({
+      id: "app-43",
+    } as Awaited<ReturnType<typeof createApplication>>);
+    currentSubmittedValues = submittedValuesWithoutFoundAt;
+
+    renderWithProviders(<NewApplicationPage />);
+
+    const foundAtLine = screen.getByText(/^found-at: \d{4}-\d{2}-\d{2}$/);
+    const expectedFoundAt = foundAtLine.textContent?.replace("found-at: ", "");
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Trigger submit" }),
+    );
+
+    await waitFor(() => {
+      expect(createApplication).toHaveBeenCalledWith(
+        expect.objectContaining({
+          foundAt: expectedFoundAt,
+        }),
+      );
+    });
   });
 
   it("shows an error notification when creating the application fails", async () => {
