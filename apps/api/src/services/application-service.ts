@@ -9,6 +9,20 @@ import {
   type ContactInput,
 } from "../schemas/applicationSchemas.js";
 
+function shouldAutoSetAppliedAt(
+  nextStatus: string | undefined,
+  previousStatus: string,
+  existingAppliedAt: Date | null | undefined,
+  nextAppliedAt: Date | undefined,
+) {
+  return (
+    nextStatus === "applied" &&
+    previousStatus !== "applied" &&
+    !existingAppliedAt &&
+    nextAppliedAt === undefined
+  );
+}
+
 export async function getApplicationOrThrow(prisma: PrismaClient, id: string) {
   const application = await prisma.application.findUnique({
     where: { id },
@@ -29,7 +43,7 @@ export async function updateApplicationWithStatusHistory(
 ) {
   const existingApplication = await prisma.application.findUnique({
     where: { id },
-    select: { status: true },
+    select: { status: true, appliedAt: true },
   });
 
   if (!existingApplication) {
@@ -38,11 +52,18 @@ export async function updateApplicationWithStatusHistory(
 
   const isStatusChange =
     data.status !== undefined && data.status !== existingApplication.status;
+  const shouldSetAppliedAt = shouldAutoSetAppliedAt(
+    data.status,
+    existingApplication.status,
+    existingApplication.appliedAt,
+    data.appliedAt,
+  );
 
   return prisma.application.update({
     where: { id },
     data: {
       ...buildApplicationData(data),
+      ...(shouldSetAppliedAt ? { appliedAt: new Date() } : {}),
       ...(isStatusChange
         ? {
             statusHistory: {
@@ -62,10 +83,27 @@ export async function updateApplicationStatus(
   id: string,
   input: ApplicationStatusInput,
 ) {
+  const existingApplication = await prisma.application.findUnique({
+    where: { id },
+    select: { status: true, appliedAt: true },
+  });
+
+  if (!existingApplication) {
+    throw new NotFoundError("Application not found");
+  }
+
   return prisma.application.update({
     where: { id },
     data: {
       status: input.status,
+      ...(shouldAutoSetAppliedAt(
+        input.status,
+        existingApplication.status,
+        existingApplication.appliedAt,
+        undefined,
+      )
+        ? { appliedAt: new Date() }
+        : {}),
       statusHistory: {
         create: omitUndefined({
           status: input.status,
