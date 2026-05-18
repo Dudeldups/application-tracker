@@ -63,6 +63,15 @@ function emptyStringToUndefined(value?: string) {
   return trimmed.length > 0 ? trimmed : undefined;
 }
 
+function getTodayDateValue() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = `${today.getMonth() + 1}`.padStart(2, "0");
+  const day = `${today.getDate()}`.padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
 export function buildApplicationFormValues(
   application?: Partial<ApplicationWithRelations>,
 ): ApplicationFormValues {
@@ -75,7 +84,10 @@ export function buildApplicationFormValues(
     source: toOptionalString(application?.source),
     jobUrl: toOptionalString(application?.jobUrl),
     status: application?.status ?? "interesting",
-    foundAt: toDateInputValue(application?.foundAt),
+    foundAt:
+      application === undefined
+        ? getTodayDateValue()
+        : toDateInputValue(application?.foundAt),
     appliedAt: toDateInputValue(application?.appliedAt),
     lastContactAt: toDateInputValue(application?.lastContactAt),
     followUpAt: toDateInputValue(application?.followUpAt),
