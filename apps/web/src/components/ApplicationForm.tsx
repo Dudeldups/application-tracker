@@ -12,6 +12,7 @@ import {
   Textarea,
   TextInput,
 } from "@mantine/core";
+import { useEffect, useRef } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 import { remoteTypeOptions, statusOptions } from "../lib/applicationMeta";
@@ -37,6 +38,15 @@ const ratingMarks = [
   { value: 5, label: "5" },
 ];
 
+function getTodayDateValue() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = `${today.getMonth() + 1}`.padStart(2, "0");
+  const day = `${today.getDate()}`.padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
 export function ApplicationForm({
   initialValues,
   submitLabel,
@@ -47,6 +57,24 @@ export function ApplicationForm({
     resolver: zodResolver(applicationFormSchema),
     defaultValues: buildApplicationFormValues(initialValues),
   });
+  const previousStatusRef = useRef(form.getValues("status"));
+  const status = form.watch("status");
+  const appliedAt = form.watch("appliedAt");
+
+  useEffect(() => {
+    if (
+      status === "applied" &&
+      previousStatusRef.current !== "applied" &&
+      !appliedAt
+    ) {
+      form.setValue("appliedAt", getTodayDateValue(), {
+        shouldDirty: true,
+        shouldTouch: true,
+      });
+    }
+
+    previousStatusRef.current = status;
+  }, [appliedAt, form, status]);
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)}>
