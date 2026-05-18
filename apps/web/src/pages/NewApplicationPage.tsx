@@ -12,11 +12,23 @@ import {
 } from "../lib/schemas/applicationFormSchema";
 import { usePageTitle } from "../lib/usePageTitle";
 
+function getTodayDateValue() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = `${today.getMonth() + 1}`.padStart(2, "0");
+  const day = `${today.getDate()}`.padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
 export function NewApplicationPage() {
   usePageTitle("New Application");
 
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [initialValues] = useState(() => ({
+    foundAt: getTodayDateValue(),
+  }));
 
   async function handleSubmit(values: ApplicationFormValues) {
     setIsSubmitting(true);
@@ -53,6 +65,8 @@ export function NewApplicationPage() {
       </div>
 
       <ApplicationForm
+        key={initialValues.foundAt}
+        initialValues={initialValues}
         submitLabel="Save application"
         onSubmit={handleSubmit}
         isSubmitting={isSubmitting}

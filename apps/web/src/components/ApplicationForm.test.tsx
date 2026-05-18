@@ -16,17 +16,6 @@ function getTodayDateValue() {
 }
 
 describe("ApplicationForm", () => {
-  it("prefills Found at with today's date for new applications", () => {
-    renderWithProviders(
-      <ApplicationForm
-        submitLabel="Save application"
-        onSubmit={vi.fn().mockResolvedValue(undefined)}
-      />,
-    );
-
-    expect(screen.getByLabelText("Found at")).toHaveValue(getTodayDateValue());
-  });
-
   it("shows validation errors for required fields", async () => {
     const onSubmit = vi.fn().mockResolvedValue(undefined);
 

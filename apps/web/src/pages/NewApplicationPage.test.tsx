@@ -69,11 +69,12 @@ const submittedValues: ApplicationFormValues = {
 
 vi.mock("../components/ApplicationForm", () => ({
   ApplicationForm: ({
+    initialValues,
     onSubmit,
     submitLabel,
     isSubmitting,
   }: {
-    initialValues?: unknown;
+    initialValues?: { foundAt?: string };
     submitLabel: string;
     onSubmit: (values: ApplicationFormValues) => Promise<void>;
     isSubmitting?: boolean;
@@ -81,6 +82,7 @@ vi.mock("../components/ApplicationForm", () => ({
     <div>
       <div>{`submit-label: ${submitLabel}`}</div>
       <div>{`submitting: ${String(Boolean(isSubmitting))}`}</div>
+      <div>{`found-at: ${initialValues?.foundAt ?? ""}`}</div>
       <button
         onClick={() => void onSubmit(submittedValues)}
         type="button">
@@ -103,6 +105,7 @@ describe("NewApplicationPage", () => {
     renderWithProviders(<NewApplicationPage />);
 
     expect(screen.getByText("submit-label: Save application")).toBeInTheDocument();
+    expect(screen.getByText(/^found-at: \d{4}-\d{2}-\d{2}$/)).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole("button", { name: "Trigger submit" }));
 
