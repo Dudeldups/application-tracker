@@ -6,6 +6,15 @@ import { ApplicationForm } from "./ApplicationForm";
 import { buildApplicationWithRelations } from "../test/factories";
 import { renderWithProviders } from "../test/test-utils";
 
+function getTodayDateValue() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = `${today.getMonth() + 1}`.padStart(2, "0");
+  const day = `${today.getDate()}`.padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
 describe("ApplicationForm", () => {
   it("shows validation errors for required fields", async () => {
     const onSubmit = vi.fn().mockResolvedValue(undefined);
@@ -124,5 +133,38 @@ describe("ApplicationForm", () => {
         priorityRating: 5,
       }),
     );
+  });
+
+  it("fills Applied at with today's date when status changes to applied", async () => {
+    renderWithProviders(
+      <ApplicationForm
+        submitLabel="Save application"
+        onSubmit={vi.fn().mockResolvedValue(undefined)}
+      />,
+    );
+
+    expect(screen.getByLabelText("Applied at")).toHaveValue("");
+
+    await userEvent.click(screen.getByRole("combobox", { name: "Status" }));
+    await userEvent.keyboard("{ArrowDown}{ArrowDown}{Enter}");
+
+    expect(screen.getByLabelText("Applied at")).toHaveValue(
+      getTodayDateValue(),
+    );
+  });
+
+  it("does not overwrite Applied at when a date already exists", async () => {
+    renderWithProviders(
+      <ApplicationForm
+        submitLabel="Save application"
+        onSubmit={vi.fn().mockResolvedValue(undefined)}
+      />,
+    );
+
+    await userEvent.type(screen.getByLabelText("Applied at"), "2026-05-10");
+    await userEvent.click(screen.getByRole("combobox", { name: "Status" }));
+    await userEvent.keyboard("{ArrowDown}{ArrowDown}{Enter}");
+
+    expect(screen.getByLabelText("Applied at")).toHaveValue("2026-05-10");
   });
 });
