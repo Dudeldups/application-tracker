@@ -18,6 +18,26 @@ export const statusMeta: Record<ApplicationStatus, BadgeMeta> = {
   no_response: { label: "No response", color: "yellow" },
 };
 
+export const statusProgressionOrder: ApplicationStatus[] = [
+  "offer",
+  "technical_task",
+  "interview",
+  "confirmation_received",
+  "applied",
+  "preparing",
+  "interesting",
+  "rejected",
+  "withdrawn",
+  "no_response",
+];
+
+export const statusProgressionRank = Object.fromEntries(
+  statusProgressionOrder.map((status, index) => [
+    status,
+    statusProgressionOrder.length - index,
+  ]),
+) as Record<ApplicationStatus, number>;
+
 export const remoteTypeMeta: Record<RemoteType, string> = {
   remote: "Remote",
   hybrid: "Hybrid",
