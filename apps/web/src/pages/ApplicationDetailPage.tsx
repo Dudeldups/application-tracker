@@ -36,7 +36,10 @@ import {
   type StatusFormValues,
 } from "../lib/schemas/forms";
 import { getErrorMessage } from "../lib/errors";
-import { toDateTimeLocalInputValue } from "../lib/format";
+import {
+  toDateTimeLocalInputValue,
+  toIsoDateTimeValue,
+} from "../lib/format";
 import { usePageTitle } from "../lib/usePageTitle";
 import type { ApplicationWithRelations } from "../types/application";
 import type { ApplicationPageLoaderData } from "./applicationLoaders";
@@ -181,7 +184,10 @@ function ApplicationDetailContent({
     setIsSubmittingCommunication(true);
 
     try {
-      await createApplicationCommunication(id, values);
+      await createApplicationCommunication(id, {
+        ...values,
+        date: toIsoDateTimeValue(values.date),
+      });
       await refreshApplication();
       communicationForm.reset({
         type: "",
