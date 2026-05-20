@@ -127,6 +127,29 @@ export function toDateTimeLocalInputValue(value?: string | null) {
   return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
 
+export function toIsoDateTimeValue(value?: string | null) {
+  if (!value) {
+    return undefined;
+  }
+
+  const [datePart, timePart] = value.split("T");
+
+  if (!datePart || !timePart) {
+    return undefined;
+  }
+
+  const [year, month, day] = datePart.split("-").map(Number);
+  const [hour, minute] = timePart.split(":").map(Number);
+
+  if (
+    [year, month, day, hour, minute].some(part => Number.isNaN(part))
+  ) {
+    return undefined;
+  }
+
+  return new Date(year, month - 1, day, hour, minute).toISOString();
+}
+
 export function toOptionalString(value?: string | null) {
   return value ?? "";
 }
