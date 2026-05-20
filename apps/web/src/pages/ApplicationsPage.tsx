@@ -27,7 +27,6 @@ import { getApplicationsList } from "../api/applications";
 import {
   remoteTypeMeta,
   statusProgressionRank,
-  statusMeta,
 } from "../lib/applicationMeta";
 import {
   compareCalendarDates,
