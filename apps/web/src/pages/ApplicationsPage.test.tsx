@@ -101,18 +101,21 @@ describe("ApplicationsPage", () => {
         id: "app-1",
         companyName: "Zulu Tech",
         priorityRating: 1,
+        status: "interesting",
         followUpAt: "2026-05-20",
       }),
       buildApplication({
         id: "app-2",
         companyName: "Acme Corp",
         priorityRating: 5,
+        status: "offer",
         followUpAt: "2026-05-22",
       }),
       buildApplication({
         id: "app-3",
         companyName: "Beta GmbH",
         priorityRating: 3,
+        status: "applied",
         followUpAt: "2026-05-21",
       }),
     ]);
@@ -128,7 +131,7 @@ describe("ApplicationsPage", () => {
         .getAllByRole("link")
         .map(link => link.textContent);
 
-    expect(getCompanyOrder()).toEqual(["Zulu Tech", "Beta GmbH", "Acme Corp"]);
+    expect(getCompanyOrder()).toEqual(["Acme Corp", "Beta GmbH", "Zulu Tech"]);
 
     await userEvent.click(screen.getByRole("button", { name: /company/i }));
 
@@ -137,5 +140,50 @@ describe("ApplicationsPage", () => {
     await userEvent.click(screen.getByRole("button", { name: /priority/i }));
 
     expect(getCompanyOrder()).toEqual(["Acme Corp", "Beta GmbH", "Zulu Tech"]);
+  });
+
+  it("sorts by status progression when the status header is clicked", async () => {
+    vi.mocked(getApplicationsList).mockResolvedValue([
+      buildApplication({
+        id: "app-1",
+        companyName: "Interesting Co",
+        status: "interesting",
+      }),
+      buildApplication({
+        id: "app-2",
+        companyName: "Offer Inc",
+        status: "offer",
+      }),
+      buildApplication({
+        id: "app-3",
+        companyName: "Interview GmbH",
+        status: "interview",
+      }),
+    ]);
+
+    renderWithProviders(<ApplicationsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Offer Inc")).toBeInTheDocument();
+    });
+
+    const getCompanyOrder = () =>
+      within(screen.getAllByRole("table")[0])
+        .getAllByRole("link")
+        .map(link => link.textContent);
+
+    expect(getCompanyOrder()).toEqual([
+      "Offer Inc",
+      "Interview GmbH",
+      "Interesting Co",
+    ]);
+
+    await userEvent.click(screen.getByRole("button", { name: /status/i }));
+
+    expect(getCompanyOrder()).toEqual([
+      "Interesting Co",
+      "Interview GmbH",
+      "Offer Inc",
+    ]);
   });
 });
