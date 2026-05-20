@@ -31,11 +31,8 @@ export const statusProgressionOrder: ApplicationStatus[] = [
   "no_response",
 ];
 
-export const statusProgressionRank = Object.fromEntries(
-  statusProgressionOrder.map((status, index) => [
-    status,
-    statusProgressionOrder.length - index,
-  ]),
+export const statusProgressionIndex = Object.fromEntries(
+  statusProgressionOrder.map((status, index) => [status, index]),
 ) as Record<ApplicationStatus, number>;
 
 export const remoteTypeMeta: Record<RemoteType, string> = {

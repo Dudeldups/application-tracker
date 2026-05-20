@@ -26,7 +26,7 @@ import { Link } from "react-router";
 import { getApplicationsList } from "../api/applications";
 import {
   remoteTypeMeta,
-  statusProgressionRank,
+  statusProgressionIndex,
 } from "../lib/applicationMeta";
 import {
   compareCalendarDates,
@@ -71,7 +71,7 @@ const finishedStatuses: ApplicationStatus[] = [
 
 const initialSort: SortState = {
   column: "status",
-  direction: "desc",
+  direction: "asc",
 };
 
 function compareNullableString(
@@ -121,9 +121,9 @@ function compareNullableNumber(
 function compareStatusProgression(
   left: ApplicationStatus,
   right: ApplicationStatus,
-  direction: SortDirection = "desc",
+  direction: SortDirection = "asc",
 ) {
-  const result = statusProgressionRank[left] - statusProgressionRank[right];
+  const result = statusProgressionIndex[left] - statusProgressionIndex[right];
   return direction === "asc" ? result : -result;
 }
 
@@ -247,7 +247,11 @@ export function ApplicationsPage() {
       return {
         column,
         direction:
-          column === "priorityRating" || column === "status" ? "desc" : "asc",
+          column === "priorityRating"
+            ? "desc"
+            : column === "status"
+              ? "asc"
+              : "asc",
       };
     });
   }
