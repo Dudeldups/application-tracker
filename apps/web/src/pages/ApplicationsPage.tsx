@@ -26,6 +26,7 @@ import { Link } from "react-router";
 import { getApplicationsList } from "../api/applications";
 import {
   remoteTypeMeta,
+  statusProgressionRank,
   statusMeta,
 } from "../lib/applicationMeta";
 import {
@@ -70,8 +71,8 @@ const finishedStatuses: ApplicationStatus[] = [
 ];
 
 const initialSort: SortState = {
-  column: "followUpAt",
-  direction: "asc",
+  column: "status",
+  direction: "desc",
 };
 
 function compareNullableString(
@@ -118,6 +119,15 @@ function compareNullableNumber(
   return direction === "asc" ? left - right : right - left;
 }
 
+function compareStatusProgression(
+  left: ApplicationStatus,
+  right: ApplicationStatus,
+  direction: SortDirection = "desc",
+) {
+  const result = statusProgressionRank[left] - statusProgressionRank[right];
+  return direction === "asc" ? result : -result;
+}
+
 function sortApplications(applications: Application[], sortState: SortState) {
   const sorted = [...applications];
 
@@ -140,9 +150,9 @@ function sortApplications(applications: Application[], sortState: SortState) {
           sortState.direction,
         );
       case "status":
-        return compareNullableString(
-          statusMeta[left.status].label,
-          statusMeta[right.status].label,
+        return compareStatusProgression(
+          left.status,
+          right.status,
           sortState.direction,
         );
       case "priorityRating":
@@ -237,7 +247,8 @@ export function ApplicationsPage() {
 
       return {
         column,
-        direction: column === "priorityRating" ? "desc" : "asc",
+        direction:
+          column === "priorityRating" || column === "status" ? "desc" : "asc",
       };
     });
   }
