@@ -1,0 +1,3 @@
+ALTER TABLE "Communication"
+ALTER COLUMN "date" TYPE TIMESTAMPTZ(3)
+USING "date" AT TIME ZONE 'UTC';

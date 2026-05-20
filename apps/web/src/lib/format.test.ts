@@ -8,6 +8,7 @@ import {
   isCalendarDateInCurrentMonth,
   isPastCalendarDate,
   toDateInputValue,
+  toIsoDateTimeValue,
 } from "./format";
 
 describe("calendar date helpers", () => {
@@ -62,5 +63,12 @@ describe("calendar date helpers", () => {
       Date.UTC(2026, 4, 16, 3, 30),
     );
     expect(getCalendarDateTimestamp("invalid")).toBe(null);
+  });
+
+  it("converts local datetime input values to ISO timestamps", () => {
+    expect(toIsoDateTimeValue("2026-05-20T09:22")).toMatch(
+      /^2026-05-20T\d{2}:22:00\.000Z$/,
+    );
+    expect(toIsoDateTimeValue("invalid")).toBe(undefined);
   });
 });

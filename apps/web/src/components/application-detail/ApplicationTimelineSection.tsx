@@ -55,7 +55,10 @@ function hasMeaningfulStoredTime(value: string) {
   );
 }
 
-function formatTimelineDate(value: string, hasExplicitTime: boolean) {
+function formatTimelineDate(
+  value: string,
+  hasExplicitTime: boolean,
+) {
   if (!hasExplicitTime) {
     return formatCalendarDate(value);
   }

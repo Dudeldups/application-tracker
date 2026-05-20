@@ -3,10 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { renderWithProviders } from "../test/test-utils";
-import {
-  buildApplicationWithRelations,
-  buildContact,
-} from "../test/factories";
+import { buildApplicationWithRelations, buildContact } from "../test/factories";
 import { notifications } from "@mantine/notifications";
 import { ApplicationDetailPage } from "./ApplicationDetailPage";
 import {
@@ -23,9 +20,8 @@ const useLoaderDataMock = vi.fn();
 const useParamsMock = vi.fn(() => ({ id: "app-1" }));
 
 vi.mock("react-router", async () => {
-  const actual = await vi.importActual<typeof import("react-router")>(
-    "react-router",
-  );
+  const actual =
+    await vi.importActual<typeof import("react-router")>("react-router");
 
   return {
     ...actual,
@@ -147,7 +143,9 @@ vi.mock("../components/application-detail/StatusChangesSection", () => ({
     <div>
       <div>{`status-section: ${application.status}`}</div>
       <button
-        onClick={() => void onSubmit({ status: "interview", note: "Scheduled" })}
+        onClick={() =>
+          void onSubmit({ status: "interview", note: "Scheduled" })
+        }
         type="button">
         Submit status
       </button>
@@ -260,7 +258,9 @@ describe("ApplicationDetailPage", () => {
 
     renderWithProviders(<ApplicationDetailPage />);
 
-    await userEvent.click(screen.getByRole("button", { name: "Submit status" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "Submit status" }),
+    );
 
     await waitFor(() => {
       expect(updateApplicationStatus).toHaveBeenCalledWith("app-1", {
@@ -291,7 +291,9 @@ describe("ApplicationDetailPage", () => {
 
     renderWithProviders(<ApplicationDetailPage />);
 
-    await userEvent.click(screen.getByRole("button", { name: "Submit contact" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "Submit contact" }),
+    );
 
     await waitFor(() => {
       expect(createApplicationContact).toHaveBeenCalledWith("app-1", {
@@ -316,7 +318,9 @@ describe("ApplicationDetailPage", () => {
     vi.mocked(createApplicationCommunication).mockResolvedValue({
       id: "comm-2",
     } as Awaited<ReturnType<typeof createApplicationCommunication>>);
-    vi.mocked(getApplication).mockResolvedValue(buildApplicationWithRelations());
+    vi.mocked(getApplication).mockResolvedValue(
+      buildApplicationWithRelations(),
+    );
 
     renderWithProviders(<ApplicationDetailPage />);
 
@@ -332,9 +336,7 @@ describe("ApplicationDetailPage", () => {
           direction: "outgoing",
           summary: "Phone screen",
           body: "Discussed role details",
-          date: expect.stringMatching(
-            /^2026-05-20T\d{2}:22:00\.000Z$/,
-          ),
+          date: expect.stringMatching(/^2026-05-20T\d{2}:22:00\.000Z$/),
         }),
       );
       expect(getApplication).toHaveBeenCalledWith("app-1");

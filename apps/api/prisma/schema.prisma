@@ -93,7 +93,7 @@ model Communication {
   id            String @id @default(cuid())
   applicationId String
 
-  date      DateTime @default(now())
+  date      DateTime @default(now()) @db.Timestamptz(3)
   type      String
   direction String
   summary   String

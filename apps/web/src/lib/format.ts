@@ -141,9 +141,7 @@ export function toIsoDateTimeValue(value?: string | null) {
   const [year, month, day] = datePart.split("-").map(Number);
   const [hour, minute] = timePart.split(":").map(Number);
 
-  if (
-    [year, month, day, hour, minute].some(part => Number.isNaN(part))
-  ) {
+  if ([year, month, day, hour, minute].some(part => Number.isNaN(part))) {
     return undefined;
   }
 
