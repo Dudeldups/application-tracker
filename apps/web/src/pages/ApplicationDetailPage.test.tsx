@@ -10,6 +10,7 @@ import {
 import { notifications } from "@mantine/notifications";
 import { ApplicationDetailPage } from "./ApplicationDetailPage";
 import {
+  createApplicationCommunication,
   createApplicationContact,
   getApplication,
   updateApplicationStatus,
@@ -191,16 +192,36 @@ vi.mock("../components/application-detail/ContactsSection", () => ({
 vi.mock("../components/application-detail/CommunicationSection", () => ({
   CommunicationSection: ({
     application,
+    onSubmit,
     onDeleteCommunication,
   }: {
     application: ApplicationWithRelations;
     isSubmitting: boolean;
     form: unknown;
-    onSubmit: (values: unknown) => Promise<void>;
+    onSubmit: (values: {
+      type: string;
+      direction: string;
+      summary: string;
+      body?: string;
+      date?: string;
+    }) => Promise<void>;
     onDeleteCommunication: (communicationId: string, label: string) => void;
   }) => (
     <div>
       <div>{`communications-count: ${application.communications.length}`}</div>
+      <button
+        onClick={() =>
+          void onSubmit({
+            type: "phone",
+            direction: "outgoing",
+            summary: "Phone screen",
+            body: "Discussed role details",
+            date: "2026-05-20T09:22",
+          })
+        }
+        type="button">
+        Submit communication
+      </button>
       <button
         onClick={() => onDeleteCommunication("comm-1", "Phone screen")}
         type="button">
@@ -287,6 +308,42 @@ describe("ApplicationDetailPage", () => {
       expect.objectContaining({
         color: "green",
         message: "Contact added.",
+      }),
+    );
+  });
+
+  it("submits communication dates as ISO timestamps", async () => {
+    vi.mocked(createApplicationCommunication).mockResolvedValue({
+      id: "comm-2",
+    } as Awaited<ReturnType<typeof createApplicationCommunication>>);
+    vi.mocked(getApplication).mockResolvedValue(buildApplicationWithRelations());
+
+    renderWithProviders(<ApplicationDetailPage />);
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Submit communication" }),
+    );
+
+    await waitFor(() => {
+      expect(createApplicationCommunication).toHaveBeenCalledWith(
+        "app-1",
+        expect.objectContaining({
+          type: "phone",
+          direction: "outgoing",
+          summary: "Phone screen",
+          body: "Discussed role details",
+          date: expect.stringMatching(
+            /^2026-05-20T\d{2}:22:00\.000Z$/,
+          ),
+        }),
+      );
+      expect(getApplication).toHaveBeenCalledWith("app-1");
+    });
+
+    expect(notifications.show).toHaveBeenCalledWith(
+      expect.objectContaining({
+        color: "green",
+        message: "Communication added.",
       }),
     );
   });
